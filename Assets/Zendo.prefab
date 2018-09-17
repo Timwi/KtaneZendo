@@ -72,7 +72,7 @@ GameObject:
   - component: {fileID: 114434426795186772}
   - component: {fileID: 114196220391283668}
   m_Layer: 0
-  m_Name: ModTemplate
+  m_Name: Zendo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
