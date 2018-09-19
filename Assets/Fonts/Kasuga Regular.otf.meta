@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 9b4cb0148dccb4d42848c9bd8377d6f9
-timeCreated: 1536930084
+guid: 92f38cf1e994ed04f8eb8da6a750dce3
+timeCreated: 1537392254
 licenseType: Free
 TrueTypeFontImporter:
   serializedVersion: 4
@@ -9,9 +9,9 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Zendo
+  fontName: Kasuga
   fontNames:
-  - Zendo
+  - Kasuga
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
