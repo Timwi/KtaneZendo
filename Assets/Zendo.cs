@@ -447,20 +447,43 @@ public class Zendo : MonoBehaviour
         };
 
         // Pick random rule
-        var values = Enum.GetValues(typeof(RuleEnum));
-        _masterRule = (RuleEnum)values.GetValue(Rnd.Range(0, values.Length));
+        _masterRule = (RuleEnum)Rnd.Range(0, Enum.GetValues(typeof(RuleEnum)).Length);
+        Debug.Log("Random rule: " + _rules[_masterRule].Text);
 
         // Search for random configuration that matches the rule
         do _config = RandomConfig();
         while (!_rules[_masterRule].Check(_config));
-
-        Debug.Log("Random rule: " + _masterRule);
-        Debug.Log("Config that matches the rule: " + String.Join(", ", _config.Tiles.Select(
-            t => t.Position + " " + t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+        Debug.Log("Config that matches the master rule: " + String.Join(", ", _config.Tiles.Select(
+            t => "Pos " + t.Position + ": " + t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
         ).ToArray()));
 
-        UpdateDisplay();
+        // Search for random configuration that doesn't match the rule
+        do _config = RandomConfig();
+        while (_rules[_masterRule].Check(_config));
+        Debug.Log("Config that doesn't match the master rule: " + String.Join(", ", _config.Tiles.Select(
+            t => "Pos " + t.Position + ": " + t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+        ).ToArray()));
 
+        // Some random guesses and a response to disprove
+        for (var i = 0; i < 10; i++)
+        {
+            RuleEnum guessedRule;
+            do guessedRule = (RuleEnum)Rnd.Range(0, Enum.GetValues(typeof(RuleEnum)).Length);
+            while (guessedRule == _masterRule);
+            Debug.Log("Random guess: " + _rules[guessedRule].Text);
+
+            do _config = RandomConfig();
+            while (_rules[_masterRule].Check(_config) == _rules[guessedRule].Check(_config));
+            Debug.Log("Config that disproves the guess: " + String.Join(", ", _config.Tiles.Select(
+                t => "Pos " + t.Position + ": " + t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+            ).ToArray()) + (
+                _rules[_masterRule].Check(_config)
+                ? ", because it matches the master rule, but not the guessed rule."
+                : ", because it matches the guessed rule, but not the master rule.")
+            );
+        }
+
+        UpdateDisplay();
     }
 
     private void UpdateDisplay()
