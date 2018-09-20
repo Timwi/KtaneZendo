@@ -11,9 +11,11 @@ public class Zendo : MonoBehaviour
 {
     public KMBombInfo Bomb;
     public KMSelectable Module;
-    public KMSelectable[] Buttons;
     public Sprite[] Sprites;
-    public GameObject[] ConfigPositions;
+    public KMSelectable[] Tiles;
+    public KMSelectable[] TileButtons;
+    public KMSelectable[] QuizButtons;
+    public KMSelectable[] GuessButtons;
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -260,26 +262,46 @@ public class Zendo : MonoBehaviour
         } } },
     };
 
-    private List<RulePart> _ruleParts;
+    private RulePart _ruleTree;
 
     private enum Color { Red, White, Yellow }
     private enum Symbol { Buddha, Lotus, Shrine }
-    private enum Direction { Up, Left, Right }
+    private enum Direction { Up, Right, Left }
 
     private RuleEnum _masterRule;
     private Config _config;
+    private RulePart _rulePart;
+    private int _activeTile = -1;
 
     void Start()
     {
         _moduleId = _moduleIdCounter++;
 
-        for (int i = 0; i < Buttons.Length; i++)
+        for (int i = 0; i < Tiles.Length; i++)
         {
             var j = i;
-            Buttons[i].OnInteract += delegate () { PressButton(j); return false; };
+            Tiles[i].OnInteract += delegate () { PressTile(j); return false; };
         }
 
-        _ruleParts = new List<RulePart>() {
+        for (int i = 0; i < TileButtons.Length; i++)
+        {
+            var j = i;
+            TileButtons[i].OnInteract += delegate () { PressTileButton(j); return false; };
+        }
+
+        for (int i = 0; i < QuizButtons.Length; i++)
+        {
+            var j = i;
+            QuizButtons[i].OnInteract += delegate () { PressQuizButton(j); return false; };
+        }
+
+        for (int i = 0; i < GuessButtons.Length; i++)
+        {
+            var j = i;
+            GuessButtons[i].OnInteract += delegate () { PressGuessButton(j); return false; };
+        }
+
+        _ruleTree = new RulePart() { Children = new List<RulePart>() {
             new RulePart() { Text = "all three", Children = new List<RulePart>() {
                 new RulePart() { Text = "colors.", Rule = _rules[RuleEnum.AllThreeColors] },
                 new RulePart() { Text = "symbols.", Rule = _rules[RuleEnum.AllThreeSymbols] },
@@ -444,7 +466,7 @@ public class Zendo : MonoBehaviour
                     new RulePart() { Text = "right", Rule = _rules[RuleEnum.ZeroPointingRight] },
                 } },
             } },
-        };
+        } };
 
         // Pick random rule
         _masterRule = (RuleEnum)Rnd.Range(0, Enum.GetValues(typeof(RuleEnum)).Length);
@@ -486,20 +508,70 @@ public class Zendo : MonoBehaviour
         UpdateDisplay();
     }
 
+    private void PressTile(int i)
+    {
+        if (i == _activeTile)
+        {
+            var tile = _config.Tiles.FirstOrDefault(t => t.Position == i);
+            if (tile == null)
+                _config.Tiles.Add(new Tile() { Position = i });
+            else
+                _config.Tiles.Remove(tile);
+        }
+        else
+        {
+            _activeTile = i;
+        }
+        UpdateDisplay();
+    }
+
+    private void PressTileButton(int i)
+    {
+        if (_activeTile == -1) return;
+
+        var tile = _config.Tiles.FirstOrDefault(t => t.Position == _activeTile);
+        if (tile == null) return;
+
+        switch (i)
+        {
+            case 0:
+                tile.Symbol = (Symbol)((int)(tile.Symbol + 1) % 3);
+                break;
+            case 1:
+                tile.Color = (Color)((int)(tile.Color + 1) % 3);
+                break;
+            case 2:
+                tile.Direction = (Direction)((int)(tile.Direction + 1) % 3);
+                break;
+        }
+
+        UpdateDisplay();
+    }
+
+    private void PressQuizButton(int i)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void PressGuessButton(int i)
+    {
+        throw new NotImplementedException();
+    }
+
     private void UpdateDisplay()
     {
-        for (var i = 0; i < ConfigPositions.Length; i++)
+        for (var i = 0; i < Tiles.Length; i++)
         {
-            var position = ConfigPositions[i];
-            position.SetActive(false);
+            var sprite = Tiles[i].transform.Find("Sprite").gameObject;
+            sprite.SetActive(false);
             foreach (var tile in _config.Tiles)
             {
                 if (tile.Position == i)
                 {
-                    position.GetComponent<SpriteRenderer>().sprite = Sprites[(int)tile.Color * 3 + (int)tile.Symbol];
-                    var rotation = tile.Direction == Direction.Left ? 90f : (tile.Direction == Direction.Right ? -90f : 0f);
-                    position.transform.localEulerAngles = new Vector3(0, 0, rotation);
-                    position.SetActive(true);
+                    sprite.GetComponent<SpriteRenderer>().sprite = Sprites[(int)tile.Color * 3 + (int)tile.Symbol];
+                    var rotation = tile.Direction == Direction.Left ? -90f : (tile.Direction == Direction.Right ? 90f : 0f);
+                    sprite.transform.localEulerAngles = new Vector3(90, rotation, 0);
+                    sprite.SetActive(true);
                 }
             }
         }
@@ -527,16 +599,6 @@ public class Zendo : MonoBehaviour
             config.Tiles[i].Position = positions[i];
 
         return config;
-    }
-
-    private void PressButton(int i)
-    {
-        throw new NotImplementedException();
-    }
-
-    void Update()
-    {
-
     }
 
     class Tile
