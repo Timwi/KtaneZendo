@@ -16,6 +16,7 @@ public class Zendo : MonoBehaviour
     public KMSelectable[] TileButtons;
     public KMSelectable[] QuizButtons;
     public KMSelectable[] GuessButtons;
+    public TextMesh GuessTokens;
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -84,181 +85,181 @@ public class Zendo : MonoBehaviour
     private Dictionary<RuleEnum, Rule> _rules = new Dictionary<RuleEnum, Rule>()
     {
         { RuleEnum.AllThreeColors, new Rule() { Text = "all three colors", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Red)
-                && c.Tiles.Any(t => t.Color == Color.White)
-                && c.Tiles.Any(t => t.Color == Color.Yellow);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red)
+                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White)
+                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow);
         } } },
         { RuleEnum.AllThreeSymbols, new Rule() { Text = "all three symbols", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Buddha)
-                && c.Tiles.Any(t => t.Symbol == Symbol.Lotus)
-                && c.Tiles.Any(t => t.Symbol == Symbol.Shrine);
+            return c.Tiles.OfType<Tile>().OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha)
+                && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus)
+                && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine);
         } } },
         { RuleEnum.AllThreeDirections, new Rule() { Text = "all three directions", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up)
-                && c.Tiles.Any(t => t.Direction == Direction.Left)
-                && c.Tiles.Any(t => t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up)
+                && c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Left)
+                && c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Right);
         } } },
         { RuleEnum.AtLeastOneBuddha, new Rule() { Text = "at least one Buddha", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Buddha);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha);
         } } },
         { RuleEnum.AtLeastOneRedBuddha, new Rule() { Text = "at least one red Buddha", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Red && t.Symbol == Symbol.Buddha);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Symbol == Symbol.Buddha);
         } } },
         { RuleEnum.AtLeastOneWhiteBuddha, new Rule() { Text = "at least one white Buddha", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.White && t.Symbol == Symbol.Buddha);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Symbol == Symbol.Buddha);
         } } },
         { RuleEnum.AtLeastOneYellowBuddha, new Rule() { Text = "at least one yellow Buddha", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Buddha);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Buddha);
         } } },
         { RuleEnum.AtLeastOneBuddhaPointingUp, new Rule() { Text = "at least one Buddha pointing up", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Buddha);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Buddha);
         } } },
         { RuleEnum.AtLeastOneBuddhaPointingLeft, new Rule() { Text = "at least one Buddha pointing left", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Buddha && t.Direction == Direction.Left);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha && t.Direction == Direction.Left);
         } } },
         { RuleEnum.AtLeastOneBuddhaPointingRight, new Rule() { Text = "at least one Buddha pointing right", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Buddha && t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha && t.Direction == Direction.Right);
         } } },
         { RuleEnum.AtLeastOneLotus, new Rule() { Text = "at least one lotus", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Lotus);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus);
         } } },
         { RuleEnum.AtLeastOneRedLotus, new Rule() { Text = "at least one red lotus", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Red && t.Symbol == Symbol.Lotus);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Symbol == Symbol.Lotus);
         } } },
         { RuleEnum.AtLeastOneWhiteLotus, new Rule() { Text = "at least one white lotus", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.White && t.Symbol == Symbol.Lotus);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Symbol == Symbol.Lotus);
         } } },
         { RuleEnum.AtLeastOneYellowLotus, new Rule() { Text = "at least one yellow lotus", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Lotus);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Lotus);
         } } },
         { RuleEnum.AtLeastOneLotusPointingUp, new Rule() { Text = "at least one lotus pointing up", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Lotus);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Lotus);
         } } },
         { RuleEnum.AtLeastOneLotusPointingLeft, new Rule() { Text = "at least one lotus pointint left", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Lotus && t.Direction == Direction.Left);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus && t.Direction == Direction.Left);
         } } },
         { RuleEnum.AtLeastOneLotusPointingRight, new Rule() { Text = "at least one lotus pointing right", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Lotus && t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus && t.Direction == Direction.Right);
         } } },
         { RuleEnum.AtLeastOneShrine, new Rule() { Text = "at least one shrine", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Shrine);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine);
         } } },
         { RuleEnum.AtLeastOneRedShrine, new Rule() { Text = "at least one red shrine", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Red && t.Symbol == Symbol.Shrine);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Symbol == Symbol.Shrine);
         } } },
         { RuleEnum.AtLeastOneWhiteShrine, new Rule() { Text = "at least one white shrine", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.White && t.Symbol == Symbol.Shrine);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Symbol == Symbol.Shrine);
         } } },
         { RuleEnum.AtLeastOneYellowShrine, new Rule() { Text = "at least one yellow shrine", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Shrine);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Shrine);
         } } },
         { RuleEnum.AtLeastOneShrinePointingUp, new Rule() { Text = "at least one shrine pointing up", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Shrine);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Shrine);
         } } },
         { RuleEnum.AtLeastOneShrinePointingLeft, new Rule() { Text = "at least one shrine pointing left", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Shrine && t.Direction == Direction.Left);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine && t.Direction == Direction.Left);
         } } },
         { RuleEnum.AtLeastOneShrinePointingRight, new Rule() { Text = "at least one shrine pointing right", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Symbol == Symbol.Shrine && t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine && t.Direction == Direction.Right);
         } } },
         { RuleEnum.AtLeastOneRed, new Rule() { Text = "at least one red", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Red);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red);
         } } },
         { RuleEnum.AtLeastOneRedPointingUp, new Rule() { Text = "at least one red pointing up", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up && t.Color == Color.Red);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.Red);
         } } },
         { RuleEnum.AtLeastOneRedPointingLeft, new Rule() { Text = "at least one red pointing left", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Red && t.Direction == Direction.Left);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Direction == Direction.Left);
         } } },
         { RuleEnum.AtLeastOneRedPointingRight, new Rule() { Text = "at least one red pointing right", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Red && t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Direction == Direction.Right);
         } } },
         { RuleEnum.AtLeastOneWhite, new Rule() { Text = "at least one white", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.White);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White);
         } } },
         { RuleEnum.AtLeastOneWhitePointingUp, new Rule() { Text = "at least one white pointing up", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up && t.Color == Color.White);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.White);
         } } },
         { RuleEnum.AtLeastOneWhitePointingLeft, new Rule() { Text = "at least one white pointing left", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.White && t.Direction == Direction.Left);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Direction == Direction.Left);
         } } },
         { RuleEnum.AtLeastOneWhitePointingRight, new Rule() { Text = "at least one white pointing right", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.White && t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Direction == Direction.Right);
         } } },
         { RuleEnum.AtLeastOneYellow, new Rule() { Text = "at least one yellow", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Yellow);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow);
         } } },
         { RuleEnum.AtLeastOneYellowPointingUp, new Rule() { Text = "at least one yellow pointing up", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up && t.Color == Color.Yellow);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.Yellow);
         } } },
         { RuleEnum.AtLeastOneYellowPointingLeft, new Rule() { Text = "at least one yellow pointing left", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Yellow && t.Direction == Direction.Left);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Direction == Direction.Left);
         } } },
         { RuleEnum.AtLeastOneYellowPointingRight, new Rule() { Text = "at least one yellow pointing right", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Color == Color.Yellow && t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Direction == Direction.Right);
         } } },
         { RuleEnum.AtLeastOnePointingUp, new Rule() { Text = "at least one pointing up", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Up);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up);
         } } },
         { RuleEnum.AtLeastOnePointingLeft, new Rule() { Text = "at least one pointing left", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Left);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Left);
         } } },
         { RuleEnum.AtLeastOnePointingRight, new Rule() { Text = "at least one pointing right", Check = (Config c) => {
-            return c.Tiles.Any(t => t.Direction == Direction.Right);
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Right);
         } } },
         { RuleEnum.ExactlyOneBuddha, new Rule() { Text = "exactly one Buddha", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Symbol == Symbol.Buddha) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Buddha) == 1;
         } } },
         { RuleEnum.ExactlyOneLotus, new Rule() { Text = "exactly one lotus", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Symbol == Symbol.Lotus) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Lotus) == 1;
         } } },
         { RuleEnum.ExactlyOneShrine, new Rule() { Text = "exactly one shrine", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Symbol == Symbol.Shrine) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Shrine) == 1;
         } } },
         { RuleEnum.ExactlyOneRed, new Rule() { Text = "exactly one red", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Color == Color.Red) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Red) == 1;
         } } },
         { RuleEnum.ExactlyOneWhite, new Rule() { Text = "exactly one white", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Color == Color.White) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.White) == 1;
         } } },
         { RuleEnum.ExactlyOneYellow, new Rule() { Text = "exactly one yellow", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Color == Color.Yellow) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Yellow) == 1;
         } } },
         { RuleEnum.ExactlyOnePointingUp, new Rule() { Text = "exactly one pointing up", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Direction == Direction.Up) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Up) == 1;
         } } },
         { RuleEnum.ExactlyOnePointingLeft, new Rule() { Text = "exactly one pointing left", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Direction == Direction.Left) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Left) == 1;
         } } },
         { RuleEnum.ExactlyOnePointingRight, new Rule() { Text = "exactly one pointing right", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Direction == Direction.Right) == 1;
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) == 1;
         } } },
         { RuleEnum.ZeroBuddha, new Rule() { Text = "zero Buddha", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Symbol == Symbol.Buddha) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Buddha) == 0;
         } } },
         { RuleEnum.ZeroLotus, new Rule() { Text = "zero lotus", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Symbol == Symbol.Lotus) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Lotus) == 0;
         } } },
         { RuleEnum.ZeroShrine, new Rule() { Text = "zero shrine", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Symbol == Symbol.Shrine) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Shrine) == 0;
         } } },
         { RuleEnum.ZeroRed, new Rule() { Text = "zero red", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Color == Color.Red) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Red) == 0;
         } } },
         { RuleEnum.ZeroWhite, new Rule() { Text = "zero white", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Color == Color.White) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.White) == 0;
         } } },
         { RuleEnum.ZeroYellow, new Rule() { Text = "zero yellow", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Color == Color.Yellow) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Yellow) == 0;
         } } },
         { RuleEnum.ZeroPointingUp, new Rule() { Text = "zero pointing up", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Direction == Direction.Up) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Up) == 0;
         } } },
         { RuleEnum.ZeroPointingLeft, new Rule() { Text = "zero pointing left", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Direction == Direction.Left) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Left) == 0;
         } } },
         { RuleEnum.ZeroPointingRight, new Rule() { Text = "zero pointing right", Check = (Config c) => {
-            return c.Tiles.Count(t => t.Direction == Direction.Right) == 0;
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) == 0;
         } } },
     };
 
@@ -270,8 +271,13 @@ public class Zendo : MonoBehaviour
 
     private RuleEnum _masterRule;
     private Config _config;
+    private Config _followsRule;
+    private Config _doesNotFollowRule;
+    private List<Config> _quizedConfigs = new List<Config>();
     private RulePart _rulePart;
+    private KMSelectable _previousButton;
     private int _activeTile = -1;
+    private int _guessTokens = 0;
 
     void Start()
     {
@@ -475,15 +481,23 @@ public class Zendo : MonoBehaviour
         // Search for random configuration that matches the rule
         do _config = RandomConfig();
         while (!_rules[_masterRule].Check(_config));
+        _followsRule = _config;
+        _quizedConfigs.Add(_config);
         Debug.Log("Config that matches the master rule: " + String.Join(", ", _config.Tiles.Select(
-            t => "Pos " + t.Position + ": " + t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+            t => t is Tile
+            ? t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+            : "(empty)"
         ).ToArray()));
 
         // Search for random configuration that doesn't match the rule
         do _config = RandomConfig();
         while (_rules[_masterRule].Check(_config));
+        _doesNotFollowRule = _config;
+        _quizedConfigs.Add(_config);
         Debug.Log("Config that doesn't match the master rule: " + String.Join(", ", _config.Tiles.Select(
-            t => "Pos " + t.Position + ": " + t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+            t => t is Tile
+            ? t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+            : "(empty)"
         ).ToArray()));
 
         // Some random guesses and a response to disprove
@@ -497,7 +511,9 @@ public class Zendo : MonoBehaviour
             do _config = RandomConfig();
             while (_rules[_masterRule].Check(_config) == _rules[guessedRule].Check(_config));
             Debug.Log("Config that disproves the guess: " + String.Join(", ", _config.Tiles.Select(
-                t => "Pos " + t.Position + ": " + t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+                t => t is Tile
+                ? t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
+                : "(empty)"
             ).ToArray()) + (
                 _rules[_masterRule].Check(_config)
                 ? ", because it matches the master rule, but not the guessed rule."
@@ -508,15 +524,25 @@ public class Zendo : MonoBehaviour
         UpdateDisplay();
     }
 
+    private bool RegisterDoubleClick(KMSelectable button)
+    {
+        if (_previousButton == button)
+        {
+            _previousButton = null;
+            return true;
+        }
+        _previousButton = button;
+        return false;
+    }
+
     private void PressTile(int i)
     {
-        if (i == _activeTile)
+        if (RegisterDoubleClick(Tiles[i]))
         {
-            var tile = _config.Tiles.FirstOrDefault(t => t.Position == i);
-            if (tile == null)
-                _config.Tiles.Add(new Tile() { Position = i });
+            if (_config.Tiles[i] == null)
+                _config.Tiles[i] = new Tile();
             else
-                _config.Tiles.Remove(tile);
+                _config.Tiles[i] = null;
         }
         else
         {
@@ -527,9 +553,11 @@ public class Zendo : MonoBehaviour
 
     private void PressTileButton(int i)
     {
+        RegisterDoubleClick(TileButtons[i]);
+
         if (_activeTile == -1) return;
 
-        var tile = _config.Tiles.FirstOrDefault(t => t.Position == _activeTile);
+        var tile = _config.Tiles[_activeTile];
         if (tile == null) return;
 
         switch (i)
@@ -550,11 +578,35 @@ public class Zendo : MonoBehaviour
 
     private void PressQuizButton(int i)
     {
-        throw new NotImplementedException();
+        // If double click, just show one of the initial configs
+        if (RegisterDoubleClick(QuizButtons[i]))
+        {
+            _config = (i == 0 ? _followsRule : _doesNotFollowRule);
+            UpdateDisplay();
+            return;
+        }
+
+        // First check if this config has been quized before
+        foreach (var config in _quizedConfigs)
+        {
+            if (_config.Equals(config)) return;
+        }
+        _quizedConfigs.Add(_config);
+
+        // Check if the guessed correctly
+        var followsRule = _rules[_masterRule].Check(_config);
+        if ((i == 0 && followsRule) || (i == 1 && !followsRule))
+        {
+            _guessTokens++;
+        }
+
+        // Update display
+        UpdateDisplay();
     }
 
     private void PressGuessButton(int i)
     {
+        RegisterDoubleClick(GuessButtons[i]);
         throw new NotImplementedException();
     }
 
@@ -564,39 +616,37 @@ public class Zendo : MonoBehaviour
         {
             var sprite = Tiles[i].transform.Find("Sprite").gameObject;
             sprite.SetActive(false);
-            foreach (var tile in _config.Tiles)
+            var tile = _config.Tiles[i];
+            if (tile is Tile)
             {
-                if (tile.Position == i)
-                {
-                    sprite.GetComponent<SpriteRenderer>().sprite = Sprites[(int)tile.Color * 3 + (int)tile.Symbol];
-                    var rotation = tile.Direction == Direction.Left ? -90f : (tile.Direction == Direction.Right ? 90f : 0f);
-                    sprite.transform.localEulerAngles = new Vector3(90, rotation, 0);
-                    sprite.SetActive(true);
-                }
+                sprite.GetComponent<SpriteRenderer>().sprite = Sprites[(int)tile.Color * 3 + (int)tile.Symbol];
+                var rotation = tile.Direction == Direction.Left ? -90f : (tile.Direction == Direction.Right ? 90f : 0f);
+                sprite.transform.localEulerAngles = new Vector3(90, rotation, 0);
+                sprite.SetActive(true);
             }
         }
+
+        GuessTokens.text = _guessTokens.ToString();
     }
 
     private Config RandomConfig()
     {
-        Config config = new Config() { Tiles = new List<Tile>() };
+        Config config = new Config() { Tiles = new List<Tile>() { null, null, null, null } };
 
         // Less chance on 1 or 4 tiles, more chance on 2 or 3 tiles
         var numTiles = (new List<int>() { 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4 })[Rnd.Range(0, 12)];
         for (var i = 0; i < numTiles; i++)
         {
-            config.Tiles.Add(new Tile()
+            config.Tiles[i] = new Tile()
             {
                 Symbol = (Symbol)Rnd.Range(0, 3),
                 Color = (Color)Rnd.Range(0, 3),
                 Direction = (Direction)Rnd.Range(0, 3)
-            });
+            };
         }
 
         // Random position
-        var positions = (new List<int>() { 0, 1, 2, 3 }).Shuffle();
-        for (var i = 0; i < config.Tiles.Count; i++)
-            config.Tiles[i].Position = positions[i];
+        config.Tiles = config.Tiles.Shuffle();
 
         return config;
     }
@@ -606,12 +656,26 @@ public class Zendo : MonoBehaviour
         public Color Color { get; set; }
         public Symbol Symbol { get; set; }
         public Direction Direction { get; set; }
-        public int Position { get; set; }
     }
 
     class Config
     {
         public List<Tile> Tiles { get; set; }
+        public bool Equals(Config config)
+        {
+            for (var i = 0; i < Tiles.Count; i++)
+            {
+                if (Tiles[i] == null && config.Tiles[i] is Tile) return false;
+                if (Tiles[i] is Tile && config.Tiles[i] == null) return false;
+                if (Tiles[i] is Tile)
+                {
+                    if (Tiles[i].Symbol != config.Tiles[i].Symbol) return false;
+                    if (Tiles[i].Color != config.Tiles[i].Color) return false;
+                    if (Tiles[i].Direction != config.Tiles[i].Direction) return false;
+                }
+            }
+            return true;
+        }
     }
 
     class Rule

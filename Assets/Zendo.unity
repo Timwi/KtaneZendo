@@ -359,48 +359,13 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 102990712992839598, guid: a6cd93055c61718408c92e5e67d40522,
         type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
-      objectReference: {fileID: 0}
-    - target: {fileID: 102502550558040398, guid: a6cd93055c61718408c92e5e67d40522,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
-      objectReference: {fileID: 0}
-    - target: {fileID: 102919292162434818, guid: a6cd93055c61718408c92e5e67d40522,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
-      objectReference: {fileID: 0}
-    - target: {fileID: 102000432776669482, guid: a6cd93055c61718408c92e5e67d40522,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
+      propertyPath: m_Text
+      value: "\u2714"
       objectReference: {fileID: 0}
     - target: {fileID: 102653518964441860, guid: a6cd93055c61718408c92e5e67d40522,
         type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
-      objectReference: {fileID: 0}
-    - target: {fileID: 102600473599144846, guid: a6cd93055c61718408c92e5e67d40522,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
-      objectReference: {fileID: 0}
-    - target: {fileID: 102299988287902924, guid: a6cd93055c61718408c92e5e67d40522,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
-      objectReference: {fileID: 0}
-    - target: {fileID: 102693446342558896, guid: a6cd93055c61718408c92e5e67d40522,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
-      objectReference: {fileID: 0}
-    - target: {fileID: 102427782072822912, guid: a6cd93055c61718408c92e5e67d40522,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 4292993505
+      propertyPath: m_Text
+      value: "\u2718"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: a6cd93055c61718408c92e5e67d40522, type: 2}
