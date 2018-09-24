@@ -482,7 +482,7 @@ public class Zendo : MonoBehaviour
         do _config = RandomConfig();
         while (!_rules[_masterRule].Check(_config));
         _followsRule = _config;
-        _quizedConfigs.Add(_config);
+        _quizedConfigs.Add(_config.Clone());
         Debug.Log("Config that matches the master rule: " + String.Join(", ", _config.Tiles.Select(
             t => t is Tile
             ? t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
@@ -493,7 +493,7 @@ public class Zendo : MonoBehaviour
         do _config = RandomConfig();
         while (_rules[_masterRule].Check(_config));
         _doesNotFollowRule = _config;
-        _quizedConfigs.Add(_config);
+        _quizedConfigs.Add(_config.Clone());
         Debug.Log("Config that doesn't match the master rule: " + String.Join(", ", _config.Tiles.Select(
             t => t is Tile
             ? t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
@@ -546,6 +546,8 @@ public class Zendo : MonoBehaviour
         }
         else
         {
+            if (_config.Tiles[i] == null)
+                _config.Tiles[i] = new Tile();
             _activeTile = i;
         }
         UpdateDisplay();
@@ -586,19 +588,18 @@ public class Zendo : MonoBehaviour
             return;
         }
 
+        // Flash the button that was the actual answer
+        var followsRule = _rules[_masterRule].Check(_config);
+        StartCoroutine(FlashCaption(QuizButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>()));
+
         // First check if this config has been quized before
         foreach (var config in _quizedConfigs)
-        {
             if (_config.Equals(config)) return;
-        }
-        _quizedConfigs.Add(_config);
+        _quizedConfigs.Add(_config.Clone());
 
-        // Check if the guessed correctly
-        var followsRule = _rules[_masterRule].Check(_config);
+        // Give guess token if guessed correctly
         if ((i == 0 && followsRule) || (i == 1 && !followsRule))
-        {
             _guessTokens++;
-        }
 
         // Update display
         UpdateDisplay();
@@ -649,6 +650,26 @@ public class Zendo : MonoBehaviour
         config.Tiles = config.Tiles.Shuffle();
 
         return config;
+    }
+
+    private IEnumerator FlashCaption(TextMesh text)
+    {
+        const float durationPerPing = .3f;
+        var original = text.color;
+
+        bool forward = true;
+        for (var i = 0; i < 3; i++)
+        {
+            for (float time = 0f; time < durationPerPing; time += Time.deltaTime)
+            {
+                yield return null;
+
+                float f = Mathf.SmoothStep(forward ? 0 : 1, forward ? 1 : 0, time / durationPerPing);
+                text.color = new UnityEngine.Color(f, f, f);
+            }
+            forward = !forward;
+        }
+        text.color = original;
     }
 
     class Tile
