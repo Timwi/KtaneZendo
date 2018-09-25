@@ -10,7 +10,7 @@ using Assets;
 public class Zendo : MonoBehaviour
 {
     public KMBombInfo Bomb;
-    public KMSelectable Module;
+    public KMBombModule Module;
     public Sprite[] Sprites;
     public KMSelectable[] Tiles;
     public KMSelectable[] TileButtons;
@@ -20,7 +20,9 @@ public class Zendo : MonoBehaviour
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
-
+    private enum Color { Red, White, Yellow }
+    private enum Symbol { Buddha, Lotus, Shrine }
+    private enum Direction { Up, Right, Left }
     private enum RuleEnum
     {
         AllThreeColors,
@@ -62,15 +64,15 @@ public class Zendo : MonoBehaviour
         AtLeastOnePointingUp,
         AtLeastOnePointingLeft,
         AtLeastOnePointingRight,
-        ExactlyOneBuddha,
-        ExactlyOneLotus,
-        ExactlyOneShrine,
-        ExactlyOneRed,
-        ExactlyOneWhite,
-        ExactlyOneYellow,
-        ExactlyOnePointingUp,
-        ExactlyOnePointingLeft,
-        ExactlyOnePointingRight,
+        AtLeastTwoBuddha,
+        AtLeastTwoLotus,
+        AtLeastTwoShrine,
+        AtLeastTwoRed,
+        AtLeastTwoWhite,
+        AtLeastTwoYellow,
+        AtLeastTwoPointingUp,
+        AtLeastTwoPointingLeft,
+        AtLeastTwoPointingRight,
         ZeroBuddha,
         ZeroLotus,
         ZeroShrine,
@@ -81,7 +83,6 @@ public class Zendo : MonoBehaviour
         ZeroPointingLeft,
         ZeroPointingRight,
     }
-
     private Dictionary<RuleEnum, Rule> _rules = new Dictionary<RuleEnum, Rule>()
     {
         { RuleEnum.AllThreeColors, new Rule() { Text = "all three colors", Check = (Config c) => {
@@ -207,32 +208,32 @@ public class Zendo : MonoBehaviour
         { RuleEnum.AtLeastOnePointingRight, new Rule() { Text = "at least one pointing right", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Right);
         } } },
-        { RuleEnum.ExactlyOneBuddha, new Rule() { Text = "exactly one Buddha", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Buddha) == 1;
+        { RuleEnum.AtLeastTwoBuddha, new Rule() { Text = "at least two Buddha", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Buddha) > 1;
         } } },
-        { RuleEnum.ExactlyOneLotus, new Rule() { Text = "exactly one lotus", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Lotus) == 1;
+        { RuleEnum.AtLeastTwoLotus, new Rule() { Text = "at least two lotus", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Lotus) > 1;
         } } },
-        { RuleEnum.ExactlyOneShrine, new Rule() { Text = "exactly one shrine", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Shrine) == 1;
+        { RuleEnum.AtLeastTwoShrine, new Rule() { Text = "at least two shrine", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Shrine) > 1;
         } } },
-        { RuleEnum.ExactlyOneRed, new Rule() { Text = "exactly one red", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Red) == 1;
+        { RuleEnum.AtLeastTwoRed, new Rule() { Text = "at least two red", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Red) > 1;
         } } },
-        { RuleEnum.ExactlyOneWhite, new Rule() { Text = "exactly one white", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.White) == 1;
+        { RuleEnum.AtLeastTwoWhite, new Rule() { Text = "at least two white", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.White) > 1;
         } } },
-        { RuleEnum.ExactlyOneYellow, new Rule() { Text = "exactly one yellow", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Yellow) == 1;
+        { RuleEnum.AtLeastTwoYellow, new Rule() { Text = "at least two yellow", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Yellow) > 1;
         } } },
-        { RuleEnum.ExactlyOnePointingUp, new Rule() { Text = "exactly one pointing up", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Up) == 1;
+        { RuleEnum.AtLeastTwoPointingUp, new Rule() { Text = "at least two pointing up", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Up) > 1;
         } } },
-        { RuleEnum.ExactlyOnePointingLeft, new Rule() { Text = "exactly one pointing left", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Left) == 1;
+        { RuleEnum.AtLeastTwoPointingLeft, new Rule() { Text = "at least two pointing left", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Left) > 1;
         } } },
-        { RuleEnum.ExactlyOnePointingRight, new Rule() { Text = "exactly one pointing right", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) == 1;
+        { RuleEnum.AtLeastTwoPointingRight, new Rule() { Text = "at least two pointing right", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) > 1;
         } } },
         { RuleEnum.ZeroBuddha, new Rule() { Text = "zero Buddha", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Buddha) == 0;
@@ -262,19 +263,13 @@ public class Zendo : MonoBehaviour
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) == 0;
         } } },
     };
-
     private RulePart _ruleTree;
-
-    private enum Color { Red, White, Yellow }
-    private enum Symbol { Buddha, Lotus, Shrine }
-    private enum Direction { Up, Right, Left }
-
+    private RulePart _activeRulePart;
     private RuleEnum _masterRule;
     private Config _config;
     private Config _followsRule;
     private Config _doesNotFollowRule;
-    private List<Config> _quizedConfigs = new List<Config>();
-    private RulePart _rulePart;
+    private List<Config> _quizzedConfigs = new List<Config>();
     private KMSelectable _previousButton;
     private int _activeTile = -1;
     private int _guessTokens = 0;
@@ -307,172 +302,176 @@ public class Zendo : MonoBehaviour
             GuessButtons[i].OnInteract += delegate () { PressGuessButton(j); return false; };
         }
 
-        _ruleTree = new RulePart() { Children = new List<RulePart>() {
-            new RulePart() { Text = "all three", Children = new List<RulePart>() {
-                new RulePart() { Text = "colors.", Rule = _rules[RuleEnum.AllThreeColors] },
-                new RulePart() { Text = "symbols.", Rule = _rules[RuleEnum.AllThreeSymbols] },
-                new RulePart() { Text = "directions.", Rule = _rules[RuleEnum.AllThreeDirections] },
+        _ruleTree = new RulePart()
+        {
+            Children = new List<RulePart>() {
+            new RulePart() { Text = "All three", Children = new List<RulePart>() {
+                new RulePart() { Text = "colors.", Rule = RuleEnum.AllThreeColors },
+                new RulePart() { Text = "symbols.", Rule = RuleEnum.AllThreeSymbols },
+                new RulePart() { Text = "directions.", Rule = RuleEnum.AllThreeDirections },
             } },
-            new RulePart() { Text = "at least one tile", Children = new List<RulePart>() {
+            new RulePart() { Text = "At least one tile", Children = new List<RulePart>() {
                 new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
                     new RulePart() { Text = "Buddha", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOneBuddha] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneBuddha },
                         new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = _rules[RuleEnum.AtLeastOneRedBuddha] },
-                            new RulePart() { Text = "white", Rule = _rules[RuleEnum.AtLeastOneWhiteBuddha] },
-                            new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.AtLeastOneYellowBuddha] },
+                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedBuddha },
+                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhiteBuddha },
+                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowBuddha },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = _rules[RuleEnum.AtLeastOneBuddhaPointingUp] },
-                            new RulePart() { Text = "left", Rule = _rules[RuleEnum.AtLeastOneBuddhaPointingLeft] },
-                            new RulePart() { Text = "right", Rule = _rules[RuleEnum.AtLeastOneBuddhaPointingRight] },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneBuddhaPointingUp },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneBuddhaPointingLeft },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneBuddhaPointingRight },
                         } },
                     } },
                     new RulePart() { Text = "lotus", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOneLotus] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneLotus },
                         new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = _rules[RuleEnum.AtLeastOneRedLotus] },
-                            new RulePart() { Text = "white", Rule = _rules[RuleEnum.AtLeastOneWhiteLotus] },
-                            new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.AtLeastOneYellowLotus] },
+                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedLotus },
+                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhiteLotus },
+                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowLotus },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = _rules[RuleEnum.AtLeastOneLotusPointingUp] },
-                            new RulePart() { Text = "left", Rule = _rules[RuleEnum.AtLeastOneLotusPointingLeft] },
-                            new RulePart() { Text = "right", Rule = _rules[RuleEnum.AtLeastOneLotusPointingRight] },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneLotusPointingUp },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneLotusPointingLeft },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneLotusPointingRight },
                         } },
                     } },
                     new RulePart() { Text = "shrine", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOneShrine] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneShrine },
                         new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = _rules[RuleEnum.AtLeastOneRedShrine] },
-                            new RulePart() { Text = "white", Rule = _rules[RuleEnum.AtLeastOneWhiteShrine] },
-                            new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.AtLeastOneYellowShrine] },
+                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedShrine },
+                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhiteShrine },
+                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowShrine },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = _rules[RuleEnum.AtLeastOneShrinePointingUp] },
-                            new RulePart() { Text = "left", Rule = _rules[RuleEnum.AtLeastOneShrinePointingLeft] },
-                            new RulePart() { Text = "right", Rule = _rules[RuleEnum.AtLeastOneShrinePointingRight] },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneShrinePointingUp },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneShrinePointingLeft },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneShrinePointingRight },
                         } },
                     } },
                 } },
                 new RulePart() { Text = "colored", Children = new List<RulePart>() {
                     new RulePart() { Text = "red", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOneRed] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneRed },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.AtLeastOneRedBuddha] },
-                            new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.AtLeastOneRedLotus] },
-                            new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.AtLeastOneRedShrine] },
+                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneRedBuddha },
+                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneRedLotus },
+                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneRedShrine },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = _rules[RuleEnum.AtLeastOneRedPointingUp] },
-                            new RulePart() { Text = "left", Rule = _rules[RuleEnum.AtLeastOneRedPointingLeft] },
-                            new RulePart() { Text = "right", Rule = _rules[RuleEnum.AtLeastOneRedPointingRight] },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneRedPointingUp },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneRedPointingLeft },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneRedPointingRight },
                         } },
                     } },
                     new RulePart() { Text = "white", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOneWhite] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneWhite },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.AtLeastOneWhiteBuddha] },
-                            new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.AtLeastOneWhiteLotus] },
-                            new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.AtLeastOneWhiteShrine] },
+                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneWhiteBuddha },
+                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneWhiteLotus },
+                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneWhiteShrine },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = _rules[RuleEnum.AtLeastOneWhitePointingUp] },
-                            new RulePart() { Text = "left", Rule = _rules[RuleEnum.AtLeastOneWhitePointingLeft] },
-                            new RulePart() { Text = "right", Rule = _rules[RuleEnum.AtLeastOneWhitePointingRight] },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneWhitePointingUp },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneWhitePointingLeft },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneWhitePointingRight },
                         } },
                     } },
                     new RulePart() { Text = "yellow", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOneYellow] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneYellow },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.AtLeastOneYellowBuddha] },
-                            new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.AtLeastOneYellowLotus] },
-                            new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.AtLeastOneYellowShrine] },
+                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneYellowBuddha },
+                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneYellowLotus },
+                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneYellowShrine },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = _rules[RuleEnum.AtLeastOneYellowPointingUp] },
-                            new RulePart() { Text = "left", Rule = _rules[RuleEnum.AtLeastOneYellowPointingLeft] },
-                            new RulePart() { Text = "right", Rule = _rules[RuleEnum.AtLeastOneYellowPointingRight] },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneYellowPointingUp },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneYellowPointingLeft },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneYellowPointingRight },
                         } },
                     } },
                 } },
                 new RulePart() { Text = "pointing", Children = new List<RulePart>() {
                     new RulePart() { Text = "up", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOnePointingUp] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePointingUp },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.AtLeastOneBuddhaPointingUp] },
-                            new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.AtLeastOneLotusPointingUp] },
-                            new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.AtLeastOneShrinePointingUp] },
+                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneBuddhaPointingUp },
+                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneLotusPointingUp },
+                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneShrinePointingUp },
                         } },
                         new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = _rules[RuleEnum.AtLeastOneRedPointingUp] },
-                            new RulePart() { Text = "white", Rule = _rules[RuleEnum.AtLeastOneWhitePointingUp] },
-                            new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.AtLeastOneYellowPointingUp] },
+                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedPointingUp },
+                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhitePointingUp },
+                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowPointingUp },
                         } },
                     } },
                     new RulePart() { Text = "left", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOnePointingLeft] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePointingLeft },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.AtLeastOneBuddhaPointingLeft] },
-                            new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.AtLeastOneLotusPointingLeft] },
-                            new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.AtLeastOneShrinePointingLeft] },
+                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneBuddhaPointingLeft },
+                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneLotusPointingLeft },
+                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneShrinePointingLeft },
                         } },
                         new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = _rules[RuleEnum.AtLeastOneRedPointingLeft] },
-                            new RulePart() { Text = "white", Rule = _rules[RuleEnum.AtLeastOneWhitePointingLeft] },
-                            new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.AtLeastOneYellowPointingLeft] },
+                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedPointingLeft },
+                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhitePointingLeft },
+                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowPointingLeft },
                         } },
                     } },
                     new RulePart() { Text = "right", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = _rules[RuleEnum.AtLeastOnePointingRight] },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePointingRight },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.AtLeastOneBuddhaPointingRight] },
-                            new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.AtLeastOneLotusPointingRight] },
-                            new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.AtLeastOneShrinePointingRight] },
+                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneBuddhaPointingRight },
+                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneLotusPointingRight },
+                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneShrinePointingRight },
                         } },
                         new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = _rules[RuleEnum.AtLeastOneRedPointingRight] },
-                            new RulePart() { Text = "white", Rule = _rules[RuleEnum.AtLeastOneWhitePointingRight] },
-                            new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.AtLeastOneYellowPointingRight] },
+                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedPointingRight },
+                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhitePointingRight },
+                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowPointingRight },
                         } },
                     } },
                 } },
             } },
-            new RulePart() { Text = "exactly one tile", Children = new List<RulePart>() {
+            new RulePart() { Text = "at least two", Children = new List<RulePart>() {
                 new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                    new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.ExactlyOneBuddha] },
-                    new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.ExactlyOneLotus] },
-                    new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.ExactlyOneShrine] },
+                    new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastTwoBuddha },
+                    new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastTwoLotus },
+                    new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastTwoShrine },
                 } },
                 new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                    new RulePart() { Text = "red", Rule = _rules[RuleEnum.ExactlyOneRed] },
-                    new RulePart() { Text = "white", Rule = _rules[RuleEnum.ExactlyOneWhite] },
-                    new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.ExactlyOneYellow] },
+                    new RulePart() { Text = "red", Rule = RuleEnum.AtLeastTwoRed },
+                    new RulePart() { Text = "white", Rule = RuleEnum.AtLeastTwoWhite },
+                    new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastTwoYellow },
                 } },
                 new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                    new RulePart() { Text = "up", Rule = _rules[RuleEnum.ExactlyOnePointingUp] },
-                    new RulePart() { Text = "left", Rule = _rules[RuleEnum.ExactlyOnePointingLeft] },
-                    new RulePart() { Text = "right", Rule = _rules[RuleEnum.ExactlyOnePointingRight] },
+                    new RulePart() { Text = "up", Rule = RuleEnum.AtLeastTwoPointingUp },
+                    new RulePart() { Text = "left", Rule = RuleEnum.AtLeastTwoPointingLeft },
+                    new RulePart() { Text = "right", Rule = RuleEnum.AtLeastTwoPointingRight },
                 } },
             } },
-            new RulePart() { Text = "zero tiles", Children = new List<RulePart>() {
+            new RulePart() { Text = "Zero tiles", Children = new List<RulePart>() {
                 new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                    new RulePart() { Text = "Buddha", Rule = _rules[RuleEnum.ZeroBuddha] },
-                    new RulePart() { Text = "lotus", Rule = _rules[RuleEnum.ZeroLotus] },
-                    new RulePart() { Text = "shrine", Rule = _rules[RuleEnum.ZeroShrine] },
+                    new RulePart() { Text = "Buddha", Rule = RuleEnum.ZeroBuddha },
+                    new RulePart() { Text = "lotus", Rule = RuleEnum.ZeroLotus },
+                    new RulePart() { Text = "shrine", Rule = RuleEnum.ZeroShrine },
                 } },
                 new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                    new RulePart() { Text = "red", Rule = _rules[RuleEnum.ZeroRed] },
-                    new RulePart() { Text = "white", Rule = _rules[RuleEnum.ZeroWhite] },
-                    new RulePart() { Text = "yellow", Rule = _rules[RuleEnum.ZeroYellow] },
+                    new RulePart() { Text = "red", Rule = RuleEnum.ZeroRed },
+                    new RulePart() { Text = "white", Rule = RuleEnum.ZeroWhite },
+                    new RulePart() { Text = "yellow", Rule = RuleEnum.ZeroYellow },
                 } },
                 new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                    new RulePart() { Text = "up", Rule = _rules[RuleEnum.ZeroPointingUp] },
-                    new RulePart() { Text = "left", Rule = _rules[RuleEnum.ZeroPointingLeft] },
-                    new RulePart() { Text = "right", Rule = _rules[RuleEnum.ZeroPointingRight] },
+                    new RulePart() { Text = "up", Rule = RuleEnum.ZeroPointingUp },
+                    new RulePart() { Text = "left", Rule = RuleEnum.ZeroPointingLeft },
+                    new RulePart() { Text = "right", Rule = RuleEnum.ZeroPointingRight },
                 } },
             } },
-        } };
+        }
+        };
+        _activeRulePart = _ruleTree;
 
         // Pick random rule
         _masterRule = (RuleEnum)Rnd.Range(0, Enum.GetValues(typeof(RuleEnum)).Length);
@@ -482,7 +481,7 @@ public class Zendo : MonoBehaviour
         do _config = RandomConfig();
         while (!_rules[_masterRule].Check(_config));
         _followsRule = _config;
-        _quizedConfigs.Add(_config.Clone());
+        _quizzedConfigs.Add(_config.Clone());
         Debug.Log("Config that matches the master rule: " + String.Join(", ", _config.Tiles.Select(
             t => t is Tile
             ? t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
@@ -493,7 +492,7 @@ public class Zendo : MonoBehaviour
         do _config = RandomConfig();
         while (_rules[_masterRule].Check(_config));
         _doesNotFollowRule = _config;
-        _quizedConfigs.Add(_config.Clone());
+        _quizzedConfigs.Add(_config.Clone());
         Debug.Log("Config that doesn't match the master rule: " + String.Join(", ", _config.Tiles.Select(
             t => t is Tile
             ? t.Color.ToString() + " " + t.Symbol.ToString() + " " + t.Direction.ToString()
@@ -593,9 +592,9 @@ public class Zendo : MonoBehaviour
         StartCoroutine(FlashCaption(QuizButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>()));
 
         // First check if this config has been quized before
-        foreach (var config in _quizedConfigs)
+        foreach (var config in _quizzedConfigs)
             if (_config.Equals(config)) return;
-        _quizedConfigs.Add(_config.Clone());
+        _quizzedConfigs.Add(_config.Clone());
 
         // Give guess token if guessed correctly
         if ((i == 0 && followsRule) || (i == 1 && !followsRule))
@@ -608,7 +607,31 @@ public class Zendo : MonoBehaviour
     private void PressGuessButton(int i)
     {
         RegisterDoubleClick(GuessButtons[i]);
-        throw new NotImplementedException();
+
+        // No guess tokens, return
+        if (_guessTokens == 0) return;
+
+        // Empty button, return
+        if (i >= _activeRulePart.Children.Count) return;
+
+        // One step further to define rule
+        _activeRulePart = _activeRulePart.Children[i];
+
+        // No child rule parts, rule is finished
+        if (_activeRulePart.Children == null)
+        {
+            if (_activeRulePart.Rule == _masterRule)
+            {
+                Module.HandlePass();
+            }
+            else
+            {
+                _guessTokens--;
+                _activeRulePart = _ruleTree;
+            }
+        }
+
+        UpdateDisplay();
     }
 
     private void UpdateDisplay()
@@ -628,6 +651,21 @@ public class Zendo : MonoBehaviour
         }
 
         GuessTokens.text = _guessTokens.ToString();
+
+        foreach (var button in GuessButtons)
+        {
+            button.transform.Find("Text").GetComponent<TextMesh>().text = "";
+        }
+
+        if (_guessTokens > 0 && _activeRulePart.Children != null)
+        {
+            for (var i = 0; i < _activeRulePart.Children.Count; i++)
+            {
+                var text = _activeRulePart.Children[i].Text;
+                if (_activeRulePart.Children[i].Children != null) text += " ...";
+                GuessButtons[i].transform.Find("Text").GetComponent<TextMesh>().text = text;
+            }
+        }
     }
 
     private Config RandomConfig()
@@ -709,6 +747,6 @@ public class Zendo : MonoBehaviour
     {
         public string Text { get; set; }
         public List<RulePart> Children { get; set; }
-        public Rule Rule { get; set; }
+        public RuleEnum Rule { get; set; }
     }
 }
