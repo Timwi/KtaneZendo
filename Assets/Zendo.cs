@@ -18,8 +18,16 @@ public class Zendo : MonoBehaviour
     public KMSelectable[] GuessButtons;
     public TextMesh GuessTokens;
 
+    // New variables:
+    // Symbol
+    // Color
+    // Background color
+    // Background shape (square / rounded / cirkle) (or even https://fontawesome.com/icons?d=gallery&c=shapes)
+
     private int _moduleId;
     private static int _moduleIdCounter = 1;
+    private bool _isButtonDown, _isLongPress;
+    private Coroutine _buttonDownCoroutine;
     private enum Color { Red, White, Yellow }
     private enum Symbol { Buddha, Lotus, Shrine }
     private enum Direction { Up, Right, Left }
@@ -281,25 +289,29 @@ public class Zendo : MonoBehaviour
         for (int i = 0; i < Tiles.Length; i++)
         {
             var j = i;
-            Tiles[i].OnInteract += delegate () { PressTile(j); return false; };
+            Tiles[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
+            Tiles[i].OnInteractEnded += delegate () { HandleButtonUp(); PressTile(j); };
         }
 
         for (int i = 0; i < TileButtons.Length; i++)
         {
             var j = i;
-            TileButtons[i].OnInteract += delegate () { PressTileButton(j); return false; };
+            TileButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
+            TileButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressTileButton(j); };
         }
 
         for (int i = 0; i < QuizButtons.Length; i++)
         {
             var j = i;
-            QuizButtons[i].OnInteract += delegate () { PressQuizButton(j); return false; };
+            QuizButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
+            QuizButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressQuizButton(j); };
         }
 
         for (int i = 0; i < GuessButtons.Length; i++)
         {
             var j = i;
-            GuessButtons[i].OnInteract += delegate () { PressGuessButton(j); return false; };
+            GuessButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
+            GuessButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
         }
 
         _ruleTree = new RulePart()
@@ -523,20 +535,28 @@ public class Zendo : MonoBehaviour
         UpdateDisplay();
     }
 
-    private bool RegisterDoubleClick(KMSelectable button)
+    private IEnumerator HandleLongPress()
     {
-        if (_previousButton == button)
+        _isButtonDown = true;
+        _isLongPress = false;
+        yield return new WaitForSeconds(.5f);
+        _isLongPress = true;
+    }
+
+    private void HandleButtonUp()
+    {
+        _isButtonDown = false;
+
+        if (_buttonDownCoroutine != null)
         {
-            _previousButton = null;
-            return true;
+            StopCoroutine(_buttonDownCoroutine);
+            _buttonDownCoroutine = null;
         }
-        _previousButton = button;
-        return false;
     }
 
     private void PressTile(int i)
     {
-        if (RegisterDoubleClick(Tiles[i]))
+        if (_isLongPress)
         {
             if (_config.Tiles[i] == null)
                 _config.Tiles[i] = new Tile();
@@ -554,8 +574,6 @@ public class Zendo : MonoBehaviour
 
     private void PressTileButton(int i)
     {
-        RegisterDoubleClick(TileButtons[i]);
-
         if (_activeTile == -1) return;
 
         var tile = _config.Tiles[_activeTile];
@@ -579,8 +597,8 @@ public class Zendo : MonoBehaviour
 
     private void PressQuizButton(int i)
     {
-        // If double click, just show one of the initial configs
-        if (RegisterDoubleClick(QuizButtons[i]))
+        // If long press, just show one of the initial configs
+        if (_isLongPress)
         {
             _config = (i == 0 ? _followsRule : _doesNotFollowRule);
             UpdateDisplay();
@@ -606,8 +624,6 @@ public class Zendo : MonoBehaviour
 
     private void PressGuessButton(int i)
     {
-        RegisterDoubleClick(GuessButtons[i]);
-
         // No guess tokens, return
         if (_guessTokens == 0) return;
 
