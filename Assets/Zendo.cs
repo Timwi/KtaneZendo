@@ -22,252 +22,253 @@ public class Zendo : MonoBehaviour
     // Symbol
     // Color
     // Background color
-    // Background shape (square / rounded / cirkle) (or even https://fontawesome.com/icons?d=gallery&c=shapes)
+    // Background shape (square / rounded / circle) (or even https://fontawesome.com/icons?d=gallery&c=shapes)
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
     private bool _isButtonDown, _isLongPress;
     private Coroutine _buttonDownCoroutine;
-    private enum Color { Red, White, Yellow }
-    private enum Symbol { Buddha, Lotus, Shrine }
+    private enum Color { SymCol1, SymCol2, SymCol3 }
+    private enum Symbol { Sym1, Sym2, Sym3 }
     private enum Direction { Up, Right, Left }
     private enum RuleEnum
     {
-        AllThreeColors,
-        AllThreeSymbols,
-        AllThreeDirections,
-        AtLeastOneBuddha,
-        AtLeastOneRedBuddha,
-        AtLeastOneWhiteBuddha,
-        AtLeastOneYellowBuddha,
-        AtLeastOneBuddhaPointingUp,
-        AtLeastOneBuddhaPointingLeft,
-        AtLeastOneBuddhaPointingRight,
-        AtLeastOneLotus,
-        AtLeastOneRedLotus,
-        AtLeastOneWhiteLotus,
-        AtLeastOneYellowLotus,
-        AtLeastOneLotusPointingUp,
-        AtLeastOneLotusPointingLeft,
-        AtLeastOneLotusPointingRight,
-        AtLeastOneShrine,
-        AtLeastOneRedShrine,
-        AtLeastOneWhiteShrine,
-        AtLeastOneYellowShrine,
-        AtLeastOneShrinePointingUp,
-        AtLeastOneShrinePointingLeft,
-        AtLeastOneShrinePointingRight,
-        AtLeastOneRed,
-        AtLeastOneRedPointingUp,
-        AtLeastOneRedPointingLeft,
-        AtLeastOneRedPointingRight,
-        AtLeastOneWhite,
-        AtLeastOneWhitePointingUp,
-        AtLeastOneWhitePointingLeft,
-        AtLeastOneWhitePointingRight,
-        AtLeastOneYellow,
-        AtLeastOneYellowPointingUp,
-        AtLeastOneYellowPointingLeft,
-        AtLeastOneYellowPointingRight,
-        AtLeastOnePointingUp,
-        AtLeastOnePointingLeft,
-        AtLeastOnePointingRight,
-        AtLeastTwoBuddha,
-        AtLeastTwoLotus,
-        AtLeastTwoShrine,
-        AtLeastTwoRed,
-        AtLeastTwoWhite,
-        AtLeastTwoYellow,
-        AtLeastTwoPointingUp,
-        AtLeastTwoPointingLeft,
-        AtLeastTwoPointingRight,
-        ZeroBuddha,
-        ZeroLotus,
-        ZeroShrine,
-        ZeroRed,
-        ZeroWhite,
-        ZeroYellow,
-        ZeroPointingUp,
-        ZeroPointingLeft,
-        ZeroPointingRight,
+        AllThreeSymCols,
+        AllThreeSyms,
+        AllThreePatCols, // new
+        AllThreePats,
+        AtLeastOneSym1,
+        AtLeastOneSymCol1Sym1,
+        AtLeastOneSymCol2Sym1,
+        AtLeastOneSymCol3Sym1,
+        AtLeastOneSym1Pat1,
+        AtLeastOneSym1Pat2,
+        AtLeastOneSym1Pat3,
+        AtLeastOneSym2,
+        AtLeastOneSymCol1Sym2,
+        AtLeastOneSymCol2Sym2,
+        AtLeastOneSymCol3Sym2,
+        AtLeastOneSym2Pat1,
+        AtLeastOneSym2Pat2,
+        AtLeastOneSym2Pat3,
+        AtLeastOneSym3,
+        AtLeastOneSymCol1Sym3,
+        AtLeastOneSymCol2Sym3,
+        AtLeastOneSymCol3Sym3,
+        AtLeastOneSym3Pat1,
+        AtLeastOneSym3Pat2,
+        AtLeastOneSym3Pat3,
+        AtLeastOneSymCol1,
+        AtLeastOneSymCol1Pat1,
+        AtLeastOneSymCol1Pat2,
+        AtLeastOneSymCol1Pat3,
+        AtLeastOneSymCol2,
+        AtLeastOneSymCol2Pat1,
+        AtLeastOneSymCol2Pat2,
+        AtLeastOneSymCol2Pat3,
+        AtLeastOneSymCol3,
+        AtLeastOneSymCol3Pat1,
+        AtLeastOneSymCol3Pat2,
+        AtLeastOneSymCol3Pat3,
+        AtLeastOnePat1,
+        AtLeastOnePat2,
+        AtLeastOnePat3,
+        AtLeastTwoSym1,
+        AtLeastTwoSym2,
+        AtLeastTwoSym3,
+        AtLeastTwoSymCol1,
+        AtLeastTwoSymCol2,
+        AtLeastTwoSymCol3,
+        AtLeastTwoPat1,
+        AtLeastTwoPat2,
+        AtLeastTwoPat3,
+        ZeroSym1,
+        ZeroSym2,
+        ZeroSym3,
+        ZeroSymCol1,
+        ZeroSymCol2,
+        ZeroSymCol3,
+        ZeroPat1,
+        ZeroPat2,
+        ZeroPat3,
     }
     private Dictionary<RuleEnum, Rule> _rules = new Dictionary<RuleEnum, Rule>()
     {
-        { RuleEnum.AllThreeColors, new Rule() { Text = "all three colors", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red)
-                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White)
-                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow);
+        { RuleEnum.AllThreeSyms, new Rule() { Text = "all three colors", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1)
+                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2)
+                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3);
         } } },
-        { RuleEnum.AllThreeSymbols, new Rule() { Text = "all three symbols", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha)
-                && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus)
-                && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine);
+        { RuleEnum.AllThreeSymCols, new Rule() { Text = "all three symbols", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().OfType<Tile>().Any(t => t.Symbol == Symbol.Sym1)
+                && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym2)
+                && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym3);
         } } },
-        { RuleEnum.AllThreeDirections, new Rule() { Text = "all three directions", Check = (Config c) => {
+        { RuleEnum.AllThreePats, new Rule() { Text = "all three directions", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up)
                 && c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Left)
                 && c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastOneBuddha, new Rule() { Text = "at least one Buddha", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha);
+        { RuleEnum.AtLeastOneSym1, new Rule() { Text = "at least one Sym1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym1);
         } } },
-        { RuleEnum.AtLeastOneRedBuddha, new Rule() { Text = "at least one red Buddha", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Symbol == Symbol.Buddha);
+        { RuleEnum.AtLeastOneSymCol1Sym1, new Rule() { Text = "at least one SymCol1 Sym1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1 && t.Symbol == Symbol.Sym1);
         } } },
-        { RuleEnum.AtLeastOneWhiteBuddha, new Rule() { Text = "at least one white Buddha", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Symbol == Symbol.Buddha);
+        { RuleEnum.AtLeastOneSymCol2Sym1, new Rule() { Text = "at least one SymCol2 Sym1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2 && t.Symbol == Symbol.Sym1);
         } } },
-        { RuleEnum.AtLeastOneYellowBuddha, new Rule() { Text = "at least one yellow Buddha", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Buddha);
+        { RuleEnum.AtLeastOneSymCol3Sym1, new Rule() { Text = "at least one SymCol3 Sym1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3 && t.Symbol == Symbol.Sym1);
         } } },
-        { RuleEnum.AtLeastOneBuddhaPointingUp, new Rule() { Text = "at least one Buddha pointing up", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Buddha);
+        { RuleEnum.AtLeastOneSym1Pat1, new Rule() { Text = "at least one Sym1 pointing up", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Sym1);
         } } },
-        { RuleEnum.AtLeastOneBuddhaPointingLeft, new Rule() { Text = "at least one Buddha pointing left", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha && t.Direction == Direction.Left);
+        { RuleEnum.AtLeastOneSym1Pat2, new Rule() { Text = "at least one Sym1 pointing left", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym1 && t.Direction == Direction.Left);
         } } },
-        { RuleEnum.AtLeastOneBuddhaPointingRight, new Rule() { Text = "at least one Buddha pointing right", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Buddha && t.Direction == Direction.Right);
+        { RuleEnum.AtLeastOneSym1Pat3, new Rule() { Text = "at least one Sym1 pointing right", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym1 && t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastOneLotus, new Rule() { Text = "at least one lotus", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus);
+        { RuleEnum.AtLeastOneSym2, new Rule() { Text = "at least one Sym2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym2);
         } } },
-        { RuleEnum.AtLeastOneRedLotus, new Rule() { Text = "at least one red lotus", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Symbol == Symbol.Lotus);
+        { RuleEnum.AtLeastOneSymCol1Sym2, new Rule() { Text = "at least one SymCol1 Sym2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1 && t.Symbol == Symbol.Sym2);
         } } },
-        { RuleEnum.AtLeastOneWhiteLotus, new Rule() { Text = "at least one white lotus", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Symbol == Symbol.Lotus);
+        { RuleEnum.AtLeastOneSymCol2Sym2, new Rule() { Text = "at least one SymCol2 Sym2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2 && t.Symbol == Symbol.Sym2);
         } } },
-        { RuleEnum.AtLeastOneYellowLotus, new Rule() { Text = "at least one yellow lotus", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Lotus);
+        { RuleEnum.AtLeastOneSymCol3Sym2, new Rule() { Text = "at least one SymCol3 Sym2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3 && t.Symbol == Symbol.Sym2);
         } } },
-        { RuleEnum.AtLeastOneLotusPointingUp, new Rule() { Text = "at least one lotus pointing up", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Lotus);
+        { RuleEnum.AtLeastOneSym2Pat1, new Rule() { Text = "at least one Sym2 pointing up", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Sym2);
         } } },
-        { RuleEnum.AtLeastOneLotusPointingLeft, new Rule() { Text = "at least one lotus pointint left", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus && t.Direction == Direction.Left);
+        { RuleEnum.AtLeastOneSym2Pat2, new Rule() { Text = "at least one Sym2 pointint left", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym2 && t.Direction == Direction.Left);
         } } },
-        { RuleEnum.AtLeastOneLotusPointingRight, new Rule() { Text = "at least one lotus pointing right", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Lotus && t.Direction == Direction.Right);
+        { RuleEnum.AtLeastOneSym2Pat3, new Rule() { Text = "at least one Sym2 pointing right", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym2 && t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastOneShrine, new Rule() { Text = "at least one shrine", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine);
+        { RuleEnum.AtLeastOneSym3, new Rule() { Text = "at least one Sym3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym3);
         } } },
-        { RuleEnum.AtLeastOneRedShrine, new Rule() { Text = "at least one red shrine", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Symbol == Symbol.Shrine);
+        { RuleEnum.AtLeastOneSymCol1Sym3, new Rule() { Text = "at least one SymCol1 Sym3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1 && t.Symbol == Symbol.Sym3);
         } } },
-        { RuleEnum.AtLeastOneWhiteShrine, new Rule() { Text = "at least one white shrine", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Symbol == Symbol.Shrine);
+        { RuleEnum.AtLeastOneSymCol2Sym3, new Rule() { Text = "at least one SymCol2 Sym3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2 && t.Symbol == Symbol.Sym3);
         } } },
-        { RuleEnum.AtLeastOneYellowShrine, new Rule() { Text = "at least one yellow shrine", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Symbol == Symbol.Shrine);
+        { RuleEnum.AtLeastOneSymCol3Sym3, new Rule() { Text = "at least one SymCol3 Sym3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3 && t.Symbol == Symbol.Sym3);
         } } },
-        { RuleEnum.AtLeastOneShrinePointingUp, new Rule() { Text = "at least one shrine pointing up", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Shrine);
+        { RuleEnum.AtLeastOneSym3Pat1, new Rule() { Text = "at least one Sym3 pointing up", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Symbol == Symbol.Sym3);
         } } },
-        { RuleEnum.AtLeastOneShrinePointingLeft, new Rule() { Text = "at least one shrine pointing left", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine && t.Direction == Direction.Left);
+        { RuleEnum.AtLeastOneSym3Pat2, new Rule() { Text = "at least one Sym3 pointing left", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym3 && t.Direction == Direction.Left);
         } } },
-        { RuleEnum.AtLeastOneShrinePointingRight, new Rule() { Text = "at least one shrine pointing right", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Shrine && t.Direction == Direction.Right);
+        { RuleEnum.AtLeastOneSym3Pat3, new Rule() { Text = "at least one Sym3 pointing right", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym3 && t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastOneRed, new Rule() { Text = "at least one red", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red);
+        { RuleEnum.AtLeastOneSymCol1, new Rule() { Text = "at least one SymCol1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1);
         } } },
-        { RuleEnum.AtLeastOneRedPointingUp, new Rule() { Text = "at least one red pointing up", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.Red);
+        { RuleEnum.AtLeastOneSymCol1Pat1, new Rule() { Text = "at least one SymCol1 pointing up", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.SymCol1);
         } } },
-        { RuleEnum.AtLeastOneRedPointingLeft, new Rule() { Text = "at least one red pointing left", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Direction == Direction.Left);
+        { RuleEnum.AtLeastOneSymCol1Pat2, new Rule() { Text = "at least one SymCol1 pointing left", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1 && t.Direction == Direction.Left);
         } } },
-        { RuleEnum.AtLeastOneRedPointingRight, new Rule() { Text = "at least one red pointing right", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Red && t.Direction == Direction.Right);
+        { RuleEnum.AtLeastOneSymCol1Pat3, new Rule() { Text = "at least one SymCol1 pointing right", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1 && t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastOneWhite, new Rule() { Text = "at least one white", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White);
+        { RuleEnum.AtLeastOneSymCol2, new Rule() { Text = "at least one SymCol2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2);
         } } },
-        { RuleEnum.AtLeastOneWhitePointingUp, new Rule() { Text = "at least one white pointing up", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.White);
+        { RuleEnum.AtLeastOneSymCol2Pat1, new Rule() { Text = "at least one SymCol2 pointing up", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.SymCol2);
         } } },
-        { RuleEnum.AtLeastOneWhitePointingLeft, new Rule() { Text = "at least one white pointing left", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Direction == Direction.Left);
+        { RuleEnum.AtLeastOneSymCol2Pat2, new Rule() { Text = "at least one SymCol2 pointing left", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2 && t.Direction == Direction.Left);
         } } },
-        { RuleEnum.AtLeastOneWhitePointingRight, new Rule() { Text = "at least one white pointing right", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.White && t.Direction == Direction.Right);
+        { RuleEnum.AtLeastOneSymCol2Pat3, new Rule() { Text = "at least one SymCol2 pointing right", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2 && t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastOneYellow, new Rule() { Text = "at least one yellow", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow);
+        { RuleEnum.AtLeastOneSymCol3, new Rule() { Text = "at least one SymCol3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3);
         } } },
-        { RuleEnum.AtLeastOneYellowPointingUp, new Rule() { Text = "at least one yellow pointing up", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.Yellow);
+        { RuleEnum.AtLeastOneSymCol3Pat1, new Rule() { Text = "at least one SymCol3 pointing up", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up && t.Color == Color.SymCol3);
         } } },
-        { RuleEnum.AtLeastOneYellowPointingLeft, new Rule() { Text = "at least one yellow pointing left", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Direction == Direction.Left);
+        { RuleEnum.AtLeastOneSymCol3Pat2, new Rule() { Text = "at least one SymCol3 pointing left", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3 && t.Direction == Direction.Left);
         } } },
-        { RuleEnum.AtLeastOneYellowPointingRight, new Rule() { Text = "at least one yellow pointing right", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.Yellow && t.Direction == Direction.Right);
+        { RuleEnum.AtLeastOneSymCol3Pat3, new Rule() { Text = "at least one SymCol3 pointing right", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3 && t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastOnePointingUp, new Rule() { Text = "at least one pointing up", Check = (Config c) => {
+        { RuleEnum.AtLeastOnePat1, new Rule() { Text = "at least one pointing up", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Up);
         } } },
-        { RuleEnum.AtLeastOnePointingLeft, new Rule() { Text = "at least one pointing left", Check = (Config c) => {
+        { RuleEnum.AtLeastOnePat2, new Rule() { Text = "at least one pointing left", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Left);
         } } },
-        { RuleEnum.AtLeastOnePointingRight, new Rule() { Text = "at least one pointing right", Check = (Config c) => {
+        { RuleEnum.AtLeastOnePat3, new Rule() { Text = "at least one pointing right", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Any(t => t.Direction == Direction.Right);
         } } },
-        { RuleEnum.AtLeastTwoBuddha, new Rule() { Text = "at least two Buddha", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Buddha) > 1;
+        { RuleEnum.AtLeastTwoSym1, new Rule() { Text = "at least two Sym1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Sym1) > 1;
         } } },
-        { RuleEnum.AtLeastTwoLotus, new Rule() { Text = "at least two lotus", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Lotus) > 1;
+        { RuleEnum.AtLeastTwoSym2, new Rule() { Text = "at least two Sym2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Sym2) > 1;
         } } },
-        { RuleEnum.AtLeastTwoShrine, new Rule() { Text = "at least two shrine", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Shrine) > 1;
+        { RuleEnum.AtLeastTwoSym3, new Rule() { Text = "at least two Sym3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Sym3) > 1;
         } } },
-        { RuleEnum.AtLeastTwoRed, new Rule() { Text = "at least two red", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Red) > 1;
+        { RuleEnum.AtLeastTwoSymCol1, new Rule() { Text = "at least two SymCol1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.SymCol1) > 1;
         } } },
-        { RuleEnum.AtLeastTwoWhite, new Rule() { Text = "at least two white", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.White) > 1;
+        { RuleEnum.AtLeastTwoSymCol2, new Rule() { Text = "at least two SymCol2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.SymCol2) > 1;
         } } },
-        { RuleEnum.AtLeastTwoYellow, new Rule() { Text = "at least two yellow", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Yellow) > 1;
+        { RuleEnum.AtLeastTwoSymCol3, new Rule() { Text = "at least two SymCol3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.SymCol3) > 1;
         } } },
-        { RuleEnum.AtLeastTwoPointingUp, new Rule() { Text = "at least two pointing up", Check = (Config c) => {
+        { RuleEnum.AtLeastTwoPat1, new Rule() { Text = "at least two pointing up", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Up) > 1;
         } } },
-        { RuleEnum.AtLeastTwoPointingLeft, new Rule() { Text = "at least two pointing left", Check = (Config c) => {
+        { RuleEnum.AtLeastTwoPat2, new Rule() { Text = "at least two pointing left", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Left) > 1;
         } } },
-        { RuleEnum.AtLeastTwoPointingRight, new Rule() { Text = "at least two pointing right", Check = (Config c) => {
+        { RuleEnum.AtLeastTwoPat3, new Rule() { Text = "at least two pointing right", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) > 1;
         } } },
-        { RuleEnum.ZeroBuddha, new Rule() { Text = "zero Buddha", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Buddha) == 0;
+        { RuleEnum.ZeroSym1, new Rule() { Text = "zero Sym1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Sym1) == 0;
         } } },
-        { RuleEnum.ZeroLotus, new Rule() { Text = "zero lotus", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Lotus) == 0;
+        { RuleEnum.ZeroSym2, new Rule() { Text = "zero Sym2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Sym2) == 0;
         } } },
-        { RuleEnum.ZeroShrine, new Rule() { Text = "zero shrine", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Shrine) == 0;
+        { RuleEnum.ZeroSym3, new Rule() { Text = "zero Sym3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Symbol == Symbol.Sym3) == 0;
         } } },
-        { RuleEnum.ZeroRed, new Rule() { Text = "zero red", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Red) == 0;
+        { RuleEnum.ZeroSymCol1, new Rule() { Text = "zero SymCol1", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.SymCol1) == 0;
         } } },
-        { RuleEnum.ZeroWhite, new Rule() { Text = "zero white", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.White) == 0;
+        { RuleEnum.ZeroSymCol2, new Rule() { Text = "zero SymCol2", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.SymCol2) == 0;
         } } },
-        { RuleEnum.ZeroYellow, new Rule() { Text = "zero yellow", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.Yellow) == 0;
+        { RuleEnum.ZeroSymCol3, new Rule() { Text = "zero SymCol3", Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Count(t => t.Color == Color.SymCol3) == 0;
         } } },
-        { RuleEnum.ZeroPointingUp, new Rule() { Text = "zero pointing up", Check = (Config c) => {
+        { RuleEnum.ZeroPat1, new Rule() { Text = "zero pointing up", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Up) == 0;
         } } },
-        { RuleEnum.ZeroPointingLeft, new Rule() { Text = "zero pointing left", Check = (Config c) => {
+        { RuleEnum.ZeroPat2, new Rule() { Text = "zero pointing left", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Left) == 0;
         } } },
-        { RuleEnum.ZeroPointingRight, new Rule() { Text = "zero pointing right", Check = (Config c) => {
+        { RuleEnum.ZeroPat3, new Rule() { Text = "zero pointing right", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) == 0;
         } } },
     };
@@ -318,167 +319,167 @@ public class Zendo : MonoBehaviour
         {
             Children = new List<RulePart>() {
             new RulePart() { Text = "All three", Children = new List<RulePart>() {
-                new RulePart() { Text = "colors.", Rule = RuleEnum.AllThreeColors },
-                new RulePart() { Text = "symbols.", Rule = RuleEnum.AllThreeSymbols },
-                new RulePart() { Text = "directions.", Rule = RuleEnum.AllThreeDirections },
+                new RulePart() { Text = "colors.", Rule = RuleEnum.AllThreeSyms },
+                new RulePart() { Text = "symbols.", Rule = RuleEnum.AllThreeSymCols },
+                new RulePart() { Text = "directions.", Rule = RuleEnum.AllThreePats },
             } },
             new RulePart() { Text = "At least one tile", Children = new List<RulePart>() {
                 new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                    new RulePart() { Text = "Buddha", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneBuddha },
-                        new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedBuddha },
-                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhiteBuddha },
-                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowBuddha },
+                    new RulePart() { Text = "Sym1", Children = new List<RulePart>() {
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneSym1 },
+                        new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                            new RulePart() { Text = "SymCol1", Rule = RuleEnum.AtLeastOneSymCol1Sym1 },
+                            new RulePart() { Text = "SymCol2", Rule = RuleEnum.AtLeastOneSymCol2Sym1 },
+                            new RulePart() { Text = "SymCol3", Rule = RuleEnum.AtLeastOneSymCol3Sym1 },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneBuddhaPointingUp },
-                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneBuddhaPointingLeft },
-                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneBuddhaPointingRight },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneSym1Pat1 },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneSym1Pat2 },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneSym1Pat3 },
                         } },
                     } },
-                    new RulePart() { Text = "lotus", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneLotus },
-                        new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedLotus },
-                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhiteLotus },
-                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowLotus },
+                    new RulePart() { Text = "Sym2", Children = new List<RulePart>() {
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneSym2 },
+                        new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                            new RulePart() { Text = "SymCol1", Rule = RuleEnum.AtLeastOneSymCol1Sym2 },
+                            new RulePart() { Text = "SymCol2", Rule = RuleEnum.AtLeastOneSymCol2Sym2 },
+                            new RulePart() { Text = "SymCol3", Rule = RuleEnum.AtLeastOneSymCol3Sym2 },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneLotusPointingUp },
-                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneLotusPointingLeft },
-                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneLotusPointingRight },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneSym2Pat1 },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneSym2Pat2 },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneSym2Pat3 },
                         } },
                     } },
-                    new RulePart() { Text = "shrine", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneShrine },
-                        new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedShrine },
-                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhiteShrine },
-                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowShrine },
+                    new RulePart() { Text = "Sym3", Children = new List<RulePart>() {
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneSym3 },
+                        new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                            new RulePart() { Text = "SymCol1", Rule = RuleEnum.AtLeastOneSymCol1Sym3 },
+                            new RulePart() { Text = "SymCol2", Rule = RuleEnum.AtLeastOneSymCol2Sym3 },
+                            new RulePart() { Text = "SymCol3", Rule = RuleEnum.AtLeastOneSymCol3Sym3 },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneShrinePointingUp },
-                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneShrinePointingLeft },
-                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneShrinePointingRight },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneSym3Pat1 },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneSym3Pat2 },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneSym3Pat3 },
                         } },
                     } },
                 } },
-                new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                    new RulePart() { Text = "red", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneRed },
+                new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                    new RulePart() { Text = "SymCol1", Children = new List<RulePart>() {
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneSymCol1 },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneRedBuddha },
-                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneRedLotus },
-                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneRedShrine },
+                            new RulePart() { Text = "Sym1", Rule = RuleEnum.AtLeastOneSymCol1Sym1 },
+                            new RulePart() { Text = "Sym2", Rule = RuleEnum.AtLeastOneSymCol1Sym2 },
+                            new RulePart() { Text = "Sym3", Rule = RuleEnum.AtLeastOneSymCol1Sym3 },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneRedPointingUp },
-                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneRedPointingLeft },
-                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneRedPointingRight },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneSymCol1Pat1 },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneSymCol1Pat2 },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneSymCol1Pat3 },
                         } },
                     } },
-                    new RulePart() { Text = "white", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneWhite },
+                    new RulePart() { Text = "SymCol2", Children = new List<RulePart>() {
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneSymCol2 },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneWhiteBuddha },
-                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneWhiteLotus },
-                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneWhiteShrine },
+                            new RulePart() { Text = "Sym1", Rule = RuleEnum.AtLeastOneSymCol2Sym1 },
+                            new RulePart() { Text = "Sym2", Rule = RuleEnum.AtLeastOneSymCol2Sym2 },
+                            new RulePart() { Text = "Sym3", Rule = RuleEnum.AtLeastOneSymCol2Sym3 },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneWhitePointingUp },
-                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneWhitePointingLeft },
-                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneWhitePointingRight },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneSymCol2Pat1 },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneSymCol2Pat2 },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneSymCol2Pat3 },
                         } },
                     } },
-                    new RulePart() { Text = "yellow", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneYellow },
+                    new RulePart() { Text = "SymCol3", Children = new List<RulePart>() {
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOneSymCol3 },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneYellowBuddha },
-                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneYellowLotus },
-                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneYellowShrine },
+                            new RulePart() { Text = "Sym1", Rule = RuleEnum.AtLeastOneSymCol3Sym1 },
+                            new RulePart() { Text = "Sym2", Rule = RuleEnum.AtLeastOneSymCol3Sym2 },
+                            new RulePart() { Text = "Sym3", Rule = RuleEnum.AtLeastOneSymCol3Sym3 },
                         } },
                         new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneYellowPointingUp },
-                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneYellowPointingLeft },
-                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneYellowPointingRight },
+                            new RulePart() { Text = "up", Rule = RuleEnum.AtLeastOneSymCol3Pat1 },
+                            new RulePart() { Text = "left", Rule = RuleEnum.AtLeastOneSymCol3Pat2 },
+                            new RulePart() { Text = "right", Rule = RuleEnum.AtLeastOneSymCol3Pat3 },
                         } },
                     } },
                 } },
                 new RulePart() { Text = "pointing", Children = new List<RulePart>() {
                     new RulePart() { Text = "up", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePointingUp },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePat1 },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneBuddhaPointingUp },
-                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneLotusPointingUp },
-                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneShrinePointingUp },
+                            new RulePart() { Text = "Sym1", Rule = RuleEnum.AtLeastOneSym1Pat1 },
+                            new RulePart() { Text = "Sym2", Rule = RuleEnum.AtLeastOneSym2Pat1 },
+                            new RulePart() { Text = "Sym3", Rule = RuleEnum.AtLeastOneSym3Pat1 },
                         } },
-                        new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedPointingUp },
-                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhitePointingUp },
-                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowPointingUp },
+                        new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                            new RulePart() { Text = "SymCol1", Rule = RuleEnum.AtLeastOneSymCol1Pat1 },
+                            new RulePart() { Text = "SymCol2", Rule = RuleEnum.AtLeastOneSymCol2Pat1 },
+                            new RulePart() { Text = "SymCol3", Rule = RuleEnum.AtLeastOneSymCol3Pat1 },
                         } },
                     } },
                     new RulePart() { Text = "left", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePointingLeft },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePat2 },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneBuddhaPointingLeft },
-                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneLotusPointingLeft },
-                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneShrinePointingLeft },
+                            new RulePart() { Text = "Sym1", Rule = RuleEnum.AtLeastOneSym1Pat2 },
+                            new RulePart() { Text = "Sym2", Rule = RuleEnum.AtLeastOneSym2Pat2 },
+                            new RulePart() { Text = "Sym3", Rule = RuleEnum.AtLeastOneSym3Pat2 },
                         } },
-                        new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedPointingLeft },
-                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhitePointingLeft },
-                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowPointingLeft },
+                        new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                            new RulePart() { Text = "SymCol1", Rule = RuleEnum.AtLeastOneSymCol1Pat2 },
+                            new RulePart() { Text = "SymCol2", Rule = RuleEnum.AtLeastOneSymCol2Pat2 },
+                            new RulePart() { Text = "SymCol3", Rule = RuleEnum.AtLeastOneSymCol3Pat2 },
                         } },
                     } },
                     new RulePart() { Text = "right", Children = new List<RulePart>() {
-                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePointingRight },
+                        new RulePart() { Text = "(done)", Rule = RuleEnum.AtLeastOnePat3 },
                         new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                            new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastOneBuddhaPointingRight },
-                            new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastOneLotusPointingRight },
-                            new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastOneShrinePointingRight },
+                            new RulePart() { Text = "Sym1", Rule = RuleEnum.AtLeastOneSym1Pat3 },
+                            new RulePart() { Text = "Sym2", Rule = RuleEnum.AtLeastOneSym2Pat3 },
+                            new RulePart() { Text = "Sym3", Rule = RuleEnum.AtLeastOneSym3Pat3 },
                         } },
-                        new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                            new RulePart() { Text = "red", Rule = RuleEnum.AtLeastOneRedPointingRight },
-                            new RulePart() { Text = "white", Rule = RuleEnum.AtLeastOneWhitePointingRight },
-                            new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastOneYellowPointingRight },
+                        new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                            new RulePart() { Text = "SymCol1", Rule = RuleEnum.AtLeastOneSymCol1Pat3 },
+                            new RulePart() { Text = "SymCol2", Rule = RuleEnum.AtLeastOneSymCol2Pat3 },
+                            new RulePart() { Text = "SymCol3", Rule = RuleEnum.AtLeastOneSymCol3Pat3 },
                         } },
                     } },
                 } },
             } },
             new RulePart() { Text = "at least two", Children = new List<RulePart>() {
                 new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                    new RulePart() { Text = "Buddha", Rule = RuleEnum.AtLeastTwoBuddha },
-                    new RulePart() { Text = "lotus", Rule = RuleEnum.AtLeastTwoLotus },
-                    new RulePart() { Text = "shrine", Rule = RuleEnum.AtLeastTwoShrine },
+                    new RulePart() { Text = "Sym1", Rule = RuleEnum.AtLeastTwoSym1 },
+                    new RulePart() { Text = "Sym2", Rule = RuleEnum.AtLeastTwoSym2 },
+                    new RulePart() { Text = "Sym3", Rule = RuleEnum.AtLeastTwoSym3 },
                 } },
-                new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                    new RulePart() { Text = "red", Rule = RuleEnum.AtLeastTwoRed },
-                    new RulePart() { Text = "white", Rule = RuleEnum.AtLeastTwoWhite },
-                    new RulePart() { Text = "yellow", Rule = RuleEnum.AtLeastTwoYellow },
+                new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                    new RulePart() { Text = "SymCol1", Rule = RuleEnum.AtLeastTwoSymCol1 },
+                    new RulePart() { Text = "SymCol2", Rule = RuleEnum.AtLeastTwoSymCol2 },
+                    new RulePart() { Text = "SymCol3", Rule = RuleEnum.AtLeastTwoSymCol3 },
                 } },
                 new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                    new RulePart() { Text = "up", Rule = RuleEnum.AtLeastTwoPointingUp },
-                    new RulePart() { Text = "left", Rule = RuleEnum.AtLeastTwoPointingLeft },
-                    new RulePart() { Text = "right", Rule = RuleEnum.AtLeastTwoPointingRight },
+                    new RulePart() { Text = "up", Rule = RuleEnum.AtLeastTwoPat1 },
+                    new RulePart() { Text = "left", Rule = RuleEnum.AtLeastTwoPat2 },
+                    new RulePart() { Text = "right", Rule = RuleEnum.AtLeastTwoPat3 },
                 } },
             } },
             new RulePart() { Text = "Zero tiles", Children = new List<RulePart>() {
                 new RulePart() { Text = "with symbol", Children = new List<RulePart>() {
-                    new RulePart() { Text = "Buddha", Rule = RuleEnum.ZeroBuddha },
-                    new RulePart() { Text = "lotus", Rule = RuleEnum.ZeroLotus },
-                    new RulePart() { Text = "shrine", Rule = RuleEnum.ZeroShrine },
+                    new RulePart() { Text = "Sym1", Rule = RuleEnum.ZeroSym1 },
+                    new RulePart() { Text = "Sym2", Rule = RuleEnum.ZeroSym2 },
+                    new RulePart() { Text = "Sym3", Rule = RuleEnum.ZeroSym3 },
                 } },
-                new RulePart() { Text = "colored", Children = new List<RulePart>() {
-                    new RulePart() { Text = "red", Rule = RuleEnum.ZeroRed },
-                    new RulePart() { Text = "white", Rule = RuleEnum.ZeroWhite },
-                    new RulePart() { Text = "yellow", Rule = RuleEnum.ZeroYellow },
+                new RulePart() { Text = "coloSymCol1", Children = new List<RulePart>() {
+                    new RulePart() { Text = "SymCol1", Rule = RuleEnum.ZeroSymCol1 },
+                    new RulePart() { Text = "SymCol2", Rule = RuleEnum.ZeroSymCol2 },
+                    new RulePart() { Text = "SymCol3", Rule = RuleEnum.ZeroSymCol3 },
                 } },
                 new RulePart() { Text = "pointing", Children = new List<RulePart>() {
-                    new RulePart() { Text = "up", Rule = RuleEnum.ZeroPointingUp },
-                    new RulePart() { Text = "left", Rule = RuleEnum.ZeroPointingLeft },
-                    new RulePart() { Text = "right", Rule = RuleEnum.ZeroPointingRight },
+                    new RulePart() { Text = "up", Rule = RuleEnum.ZeroPat1 },
+                    new RulePart() { Text = "left", Rule = RuleEnum.ZeroPat2 },
+                    new RulePart() { Text = "right", Rule = RuleEnum.ZeroPat3 },
                 } },
             } },
         }
