@@ -18,88 +18,20 @@ public class Zendo : MonoBehaviour
     public KMSelectable[] GuessButtons;
     public TextMesh GuessTokens;
 
-    // New variables:
-    // Symbol
-    // Color
-    // Background color
-    // Background shape (square / rounded / circle) (or even https://fontawesome.com/icons?d=gallery&c=shapes)
-
     private int _moduleId;
     private static int _moduleIdCounter = 1;
     private bool _isButtonDown, _isLongPress;
     private Coroutine _buttonDownCoroutine;
-    private enum Color { SymCol1, SymCol2, SymCol3 }
-    private enum Symbol { Sym1, Sym2, Sym3 }
-    private enum Direction { Up, Right, Left }
-    private enum RuleEnum
+
+    private Dictionary<string, Rule> _rules = new Dictionary<RuleEnum, Rule>();
+    /*
     {
-        AllThreeSymCols,
-        AllThreeSyms,
-        AllThreePatCols, // new
-        AllThreePats,
-        AtLeastOneSym1,
-        AtLeastOneSymCol1Sym1,
-        AtLeastOneSymCol2Sym1,
-        AtLeastOneSymCol3Sym1,
-        AtLeastOneSym1Pat1,
-        AtLeastOneSym1Pat2,
-        AtLeastOneSym1Pat3,
-        AtLeastOneSym2,
-        AtLeastOneSymCol1Sym2,
-        AtLeastOneSymCol2Sym2,
-        AtLeastOneSymCol3Sym2,
-        AtLeastOneSym2Pat1,
-        AtLeastOneSym2Pat2,
-        AtLeastOneSym2Pat3,
-        AtLeastOneSym3,
-        AtLeastOneSymCol1Sym3,
-        AtLeastOneSymCol2Sym3,
-        AtLeastOneSymCol3Sym3,
-        AtLeastOneSym3Pat1,
-        AtLeastOneSym3Pat2,
-        AtLeastOneSym3Pat3,
-        AtLeastOneSymCol1,
-        AtLeastOneSymCol1Pat1,
-        AtLeastOneSymCol1Pat2,
-        AtLeastOneSymCol1Pat3,
-        AtLeastOneSymCol2,
-        AtLeastOneSymCol2Pat1,
-        AtLeastOneSymCol2Pat2,
-        AtLeastOneSymCol2Pat3,
-        AtLeastOneSymCol3,
-        AtLeastOneSymCol3Pat1,
-        AtLeastOneSymCol3Pat2,
-        AtLeastOneSymCol3Pat3,
-        AtLeastOnePat1,
-        AtLeastOnePat2,
-        AtLeastOnePat3,
-        AtLeastTwoSym1,
-        AtLeastTwoSym2,
-        AtLeastTwoSym3,
-        AtLeastTwoSymCol1,
-        AtLeastTwoSymCol2,
-        AtLeastTwoSymCol3,
-        AtLeastTwoPat1,
-        AtLeastTwoPat2,
-        AtLeastTwoPat3,
-        ZeroSym1,
-        ZeroSym2,
-        ZeroSym3,
-        ZeroSymCol1,
-        ZeroSymCol2,
-        ZeroSymCol3,
-        ZeroPat1,
-        ZeroPat2,
-        ZeroPat3,
-    }
-    private Dictionary<RuleEnum, Rule> _rules = new Dictionary<RuleEnum, Rule>()
-    {
-        { RuleEnum.AllThreeSyms, new Rule() { Text = "all three colors", Check = (Config c) => {
-            return c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol1)
-                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol2)
-                && c.Tiles.OfType<Tile>().Any(t => t.Color == Color.SymCol3);
+        { "all three symbol colors", new Rule() { Check = (Config c) => {
+            return c.Tiles.OfType<Tile>().Any(t => t.Color == 1)
+                && c.Tiles.OfType<Tile>().Any(t => t.Color == 2)
+                && c.Tiles.OfType<Tile>().Any(t => t.Color == 3);
         } } },
-        { RuleEnum.AllThreeSymCols, new Rule() { Text = "all three symbols", Check = (Config c) => {
+        { "all three symbols", new Rule() { Check = (Config c) => {
             return c.Tiles.OfType<Tile>().OfType<Tile>().Any(t => t.Symbol == Symbol.Sym1)
                 && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym2)
                 && c.Tiles.OfType<Tile>().Any(t => t.Symbol == Symbol.Sym3);
@@ -271,7 +203,10 @@ public class Zendo : MonoBehaviour
         { RuleEnum.ZeroPat3, new Rule() { Text = "zero pointing right", Check = (Config c) => {
             return c.Tiles.OfType<Tile>().Count(t => t.Direction == Direction.Right) == 0;
         } } },
-    };
+    };*/
+
+    private enum Property { SymbolColor, Symbol, PatterColor, Pattern };
+    private string[] _propertyNames = { "symbol color", "symbol", "pattern color", "pattern" };
     private RulePart _ruleTree;
     private RulePart _activeRulePart;
     private RuleEnum _masterRule;
@@ -313,6 +248,21 @@ public class Zendo : MonoBehaviour
             var j = i;
             GuessButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
             GuessButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
+        }
+
+        _rules = new Dictionary<string, Rule>();
+
+        for (var i = 0; i < 3; i++)
+        {
+            _rules.Add("all three " + _propertyNames[i] + "s", new Rule()
+            {
+                Check = (Config c) =>
+                {
+                    return c.Tiles.OfType<Tile>().Any(t => t.Property[i] == 1)
+                        && c.Tiles.OfType<Tile>().Any(t => t.Property[i] == 2)
+                        && c.Tiles.OfType<Tile>().Any(t => t.Property[i] == 3);
+                }
+            });
         }
 
         _ruleTree = new RulePart()
@@ -696,8 +646,8 @@ public class Zendo : MonoBehaviour
             config.Tiles[i] = new Tile()
             {
                 Symbol = (Symbol)Rnd.Range(0, 3),
-                Color = (Color)Rnd.Range(0, 3),
-                Direction = (Direction)Rnd.Range(0, 3)
+                SymbolColor = (Color)Rnd.Range(0, 3),
+                Pattern = (Direction)Rnd.Range(0, 3)
             };
         }
 
@@ -729,9 +679,11 @@ public class Zendo : MonoBehaviour
 
     class Tile
     {
-        public Color Color { get; set; }
-        public Symbol Symbol { get; set; }
-        public Direction Direction { get; set; }
+        public int[] Properties { get; set; }
+        public Tile()
+        {
+            this.Properties = new int[] { 0, 0, 0, 0 };
+        }
     }
 
     class Config
@@ -756,7 +708,6 @@ public class Zendo : MonoBehaviour
 
     class Rule
     {
-        public string Text { get; set; }
         public Func<Config, bool> Check { get; set; }
     }
 
@@ -764,6 +715,6 @@ public class Zendo : MonoBehaviour
     {
         public string Text { get; set; }
         public List<RulePart> Children { get; set; }
-        public RuleEnum Rule { get; set; }
+        public string Rule { get; set; }
     }
 }
