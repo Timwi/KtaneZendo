@@ -7,7 +7,7 @@ using KmHelper;
 using Rnd = UnityEngine.Random;
 using Assets;
 
-public class Zendo : MonoBehaviour
+public partial class Zendo : MonoBehaviour
 {
     public KMBombInfo Bomb;
     public KMBombModule Module;
@@ -24,12 +24,9 @@ public class Zendo : MonoBehaviour
     private Coroutine _buttonDownCoroutine;
 
     private Dictionary<string, Rule> _rules = new Dictionary<string, Rule>();
-    //private enum Property { SymbolColor, Symbol, PatterColor, Pattern };
     private string[] _propertyNames = { "symbol color", "symbol", "pattern color", "pattern" };
-    private RulePart _ruleTree;
-    private RulePart _activeRulePart;
-    private string _masterRule;
-    private Config _config;
+    private Rule _masterRule;
+    private Config _playerConfig;
     private Config _followsRule;
     private Config _doesNotFollowRule;
     private List<Config> _quizzedConfigs = new List<Config>();
@@ -69,6 +66,7 @@ public class Zendo : MonoBehaviour
             GuessButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
         }
 
+        /*
         // Define all possible rules
         _rules = new Dictionary<string, Rule>();
         for (var firstProperty = 0; firstProperty < 4; firstProperty++)
@@ -124,41 +122,27 @@ public class Zendo : MonoBehaviour
                     }
                 }
             }
-        }
-
-        _ruleTree = new RulePart();
-        var rulePartAllThree = new RulePart() { Text = "all three" };
-        _ruleTree.Children.Add(rulePartAllThree);
-        foreach (var property in _propertyNames)
-        {
-            rulePartAllThree.Children.Add(new RulePart()
-            {
-                Text = String.Format("{0}s", property),
-                Rule = String.Format("all three {0}s", property)
-            });
-        }
-
-        var str = "";
-        foreach (KeyValuePair<string, Rule> rule in _rules) str += rule.Key + "\n";
-        Debug.Log(str);
+        }*/
 
         // Pick random rule
-        _masterRule = _rules.ElementAt(Rnd.Range(0, _rules.Count)).Key;
+        _masterRule = new Rule();
+        _masterRule.PickRandom();
+        _rules.ElementAt(Rnd.Range(0, _rules.Count)).Key;
         Debug.LogFormat("Random rule: {0}", _masterRule);
 
         // Search for random configuration that matches the rule
-        do _config = RandomConfig();
-        while (!_rules[_masterRule].Check(_config));
-        _followsRule = _config;
-        _quizzedConfigs.Add(_config.Clone());
-        Debug.LogFormat("Config that matches the master rule: {0}", _config.ToString());
+        do _playerConfig = RandomConfig();
+        while (!_rules[_masterRule].Check(_playerConfig));
+        _followsRule = _playerConfig;
+        _quizzedConfigs.Add(_playerConfig.Clone());
+        Debug.LogFormat("Config that matches the master rule: {0}", _playerConfig.ToString());
 
         // Search for random configuration that doesn't match the rule
-        do _config = RandomConfig();
-        while (_rules[_masterRule].Check(_config));
-        _doesNotFollowRule = _config;
-        _quizzedConfigs.Add(_config.Clone());
-        Debug.LogFormat("Config that doesn't match the master rule: {0}", _config.ToString());
+        do _playerConfig = RandomConfig();
+        while (_rules[_masterRule].Check(_playerConfig));
+        _doesNotFollowRule = _playerConfig;
+        _quizzedConfigs.Add(_playerConfig.Clone());
+        Debug.LogFormat("Config that doesn't match the master rule: {0}", _playerConfig.ToString());
 
         // Some random guesses and a response to disprove
         for (var i = 0; i < 10; i++)
@@ -168,11 +152,11 @@ public class Zendo : MonoBehaviour
             while (guessedRule == _masterRule);
             Debug.LogFormat("Random guess: {0}", guessedRule);
 
-            do _config = RandomConfig();
-            while (_rules[_masterRule].Check(_config) == _rules[guessedRule].Check(_config));
+            do _playerConfig = RandomConfig();
+            while (_rules[_masterRule].Check(_playerConfig) == _rules[guessedRule].Check(_playerConfig));
             Debug.LogFormat("Config that disproves the guess: {0} {1}",
-                _config.ToString(),
-                (_rules[_masterRule].Check(_config)
+                _playerConfig.ToString(),
+                (_rules[_masterRule].Check(_playerConfig)
                 ? ", because it matches the master rule, but not the guessed rule."
                 : ", because it matches the guessed rule, but not the master rule.")
                 );
@@ -204,15 +188,15 @@ public class Zendo : MonoBehaviour
     {
         if (_isLongPress)
         {
-            if (_config.Tiles[i] == null)
-                _config.Tiles[i] = new Tile();
+            if (_playerConfig.Tiles[i] == null)
+                _playerConfig.Tiles[i] = new Tile();
             else
-                _config.Tiles[i] = null;
+                _playerConfig.Tiles[i] = null;
         }
         else
         {
-            if (_config.Tiles[i] == null)
-                _config.Tiles[i] = new Tile();
+            if (_playerConfig.Tiles[i] == null)
+                _playerConfig.Tiles[i] = new Tile();
             _activeTile = i;
         }
         UpdateDisplay();
@@ -222,7 +206,7 @@ public class Zendo : MonoBehaviour
     {
         if (_activeTile == -1) return;
 
-        var tile = _config.Tiles[_activeTile];
+        var tile = _playerConfig.Tiles[_activeTile];
         if (tile == null) return;
 
         /*        switch (i)
@@ -246,19 +230,19 @@ public class Zendo : MonoBehaviour
         // If long press, just show one of the initial configs
         if (_isLongPress)
         {
-            _config = (i == 0 ? _followsRule : _doesNotFollowRule);
+            _playerConfig = (i == 0 ? _followsRule : _doesNotFollowRule);
             UpdateDisplay();
             return;
         }
 
         // Flash the button that was the actual answer
-        var followsRule = _rules[_masterRule].Check(_config);
+        var followsRule = _rules[_masterRule].Check(_playerConfig);
         StartCoroutine(FlashCaption(QuizButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>()));
 
         // First check if this config has been quized before
         foreach (var config in _quizzedConfigs)
-            if (_config.Equals(config)) return;
-        _quizzedConfigs.Add(_config.Clone());
+            if (_playerConfig.Equals(config)) return;
+        _quizzedConfigs.Add(_playerConfig.Clone());
 
         // Give guess token if guessed correctly
         if ((i == 0 && followsRule) || (i == 1 && !followsRule))
@@ -374,18 +358,10 @@ public class Zendo : MonoBehaviour
         text.color = original;
     }
 
-    class Tile
-    {
-        public int[] Properties { get; set; }
-        public Tile()
-        {
-            this.Properties = new int[] { 0, 0, 0, 0 };
-        }
-    }
-
-    class Config
+    class Config : IEquatable<Config>
     {
         public List<Tile> Tiles { get; set; }
+
         public bool Equals(Config config)
         {
             for (var i = 0; i < Tiles.Count; i++)
@@ -416,17 +392,5 @@ public class Zendo : MonoBehaviour
             : "(empty)"
             ).ToArray());
         }
-    }
-
-    class Rule
-    {
-        public Func<Config, bool> Check { get; set; }
-    }
-
-    class RulePart
-    {
-        public string Text { get; set; }
-        public List<RulePart> Children { get; set; }
-        public string Rule { get; set; }
     }
 }
