@@ -126,40 +126,38 @@ public partial class Zendo : MonoBehaviour
 
         // Pick random rule
         _masterRule = new Rule();
-        _masterRule.PickRandom();
-        _rules.ElementAt(Rnd.Range(0, _rules.Count)).Key;
+        _masterRule.Randomize();
         Debug.LogFormat("Random rule: {0}", _masterRule);
 
         // Search for random configuration that matches the rule
-        do _playerConfig = RandomConfig();
-        while (!_rules[_masterRule].Check(_playerConfig));
-        _followsRule = _playerConfig;
-        _quizzedConfigs.Add(_playerConfig.Clone());
-        Debug.LogFormat("Config that matches the master rule: {0}", _playerConfig.ToString());
+        _followsRule = new Config();
+        do _followsRule.Randomize();
+        while (!_masterRule.Check(_followsRule));
+        _quizzedConfigs.Add(_followsRule.Clone());
+        Debug.LogFormat("Config that matches the master rule: {0}", _followsRule.ToString());
 
         // Search for random configuration that doesn't match the rule
-        do _playerConfig = RandomConfig();
-        while (_rules[_masterRule].Check(_playerConfig));
-        _doesNotFollowRule = _playerConfig;
-        _quizzedConfigs.Add(_playerConfig.Clone());
-        Debug.LogFormat("Config that doesn't match the master rule: {0}", _playerConfig.ToString());
+        do _doesNotFollowRule.Randomize();
+        while (_masterRule.Check(_doesNotFollowRule));
+        _quizzedConfigs.Add(_doesNotFollowRule.Clone());
+        Debug.LogFormat("Config that doesn't match the master rule: {0}", _doesNotFollowRule.ToString());
 
         // Some random guesses and a response to disprove
         for (var i = 0; i < 10; i++)
         {
-            string guessedRule;
-            do guessedRule = _rules.ElementAt(Rnd.Range(0, _rules.Count)).Key;
+            var guessedRule = new Rule();
+            do guessedRule.Randomize();
             while (guessedRule == _masterRule);
             Debug.LogFormat("Random guess: {0}", guessedRule);
 
-            do _playerConfig = RandomConfig();
-            while (_rules[_masterRule].Check(_playerConfig) == _rules[guessedRule].Check(_playerConfig));
+            var config = new Config();
+            do config.Randomize();
+            while (_masterRule.Check(config) == guessedRule.Check(config));
             Debug.LogFormat("Config that disproves the guess: {0} {1}",
                 _playerConfig.ToString(),
-                (_rules[_masterRule].Check(_playerConfig)
-                ? ", because it matches the master rule, but not the guessed rule."
-                : ", because it matches the guessed rule, but not the master rule.")
-                );
+                (_masterRule.Check(config)
+                    ? ", because it matches the master rule, but not the guessed rule."
+                    : ", because it matches the guessed rule, but not the master rule."));
         }
 
         UpdateDisplay();
@@ -209,19 +207,10 @@ public partial class Zendo : MonoBehaviour
         var tile = _playerConfig.Tiles[_activeTile];
         if (tile == null) return;
 
-        /*        switch (i)
-                {
-                    case 0:
-                        tile.Symbol = (Symbol)((int)(tile.Symbol + 1) % 3);
-                        break;
-                    case 1:
-                        tile.Color = (Color)((int)(tile.Color + 1) % 3);
-                        break;
-                    case 2:
-                        tile.Direction = (Direction)((int)(tile.Direction + 1) % 3);
-                        break;
-                }
-        */
+        tile.Properties[(RuleProperty)i] += 1;
+        if (tile.Properties[(RuleProperty)i] == 4)
+            tile.Properties[(RuleProperty)i] = 1;
+
         UpdateDisplay();
     }
 
@@ -315,29 +304,6 @@ public partial class Zendo : MonoBehaviour
         */
     }
 
-    private Config RandomConfig()
-    {
-
-        Config config = new Config() { Tiles = new List<Tile>() { null, null, null, null } };
-        /*
-        // Less chance on 1 or 4 tiles, more chance on 2 or 3 tiles
-        var numTiles = (new List<int>() { 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4 })[Rnd.Range(0, 12)];
-        for (var i = 0; i < numTiles; i++)
-        {
-            config.Tiles[i] = new Tile()
-            {
-                Symbol = (Symbol)Rnd.Range(0, 3),
-                SymbolColor = (Color)Rnd.Range(0, 3),
-                Pattern = (Direction)Rnd.Range(0, 3)
-            };
-        }
-
-        // Random position
-        config.Tiles = config.Tiles.Shuffle();
-        */
-        return config;
-    }
-
     private IEnumerator FlashCaption(TextMesh text)
     {
         const float durationPerPing = .3f;
@@ -356,41 +322,5 @@ public partial class Zendo : MonoBehaviour
             forward = !forward;
         }
         text.color = original;
-    }
-
-    class Config : IEquatable<Config>
-    {
-        public List<Tile> Tiles { get; set; }
-
-        public bool Equals(Config config)
-        {
-            for (var i = 0; i < Tiles.Count; i++)
-            {
-                if (Tiles[i] == null && config.Tiles[i] is Tile) return false;
-                if (Tiles[i] is Tile && config.Tiles[i] == null) return false;
-                if (Tiles[i] is Tile)
-                {
-                    for (var property = 0; property < 3; property++)
-                    {
-                        if (Tiles[i].Properties[property] != config.Tiles[i].Properties[property]) return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        override public string ToString()
-        {
-            return String.Join(", ", this.Tiles.Select(
-            t => t is Tile
-            ? String.Format(
-                    "(symbol color {0}, symbol {1}, pattern color {2}, pattern {3})",
-                    t.Properties[0],
-                    t.Properties[1],
-                    t.Properties[2],
-                    t.Properties[3])
-            : "(empty)"
-            ).ToArray());
-        }
     }
 }
