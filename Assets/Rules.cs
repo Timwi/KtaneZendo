@@ -11,23 +11,37 @@ public partial class Zendo
 
     class Tile
     {
-        public Dictionary<RuleProperty, int> Properties { get; set; }
+        public Dictionary<RuleProperty?, int> Properties { get; set; }
     }
 
     class Rule : IEquatable<Rule>
     {
         public RuleCount Count { get; set; }
         public RuleProperty FirstProperty { get; set; }
-        public RuleProperty SecondProperty { get; set; }
+        public RuleProperty? SecondProperty { get; set; }
         public int FirstVariant { get; set; }
         public int SecondVariant { get; set; }
 
-        public bool Check(Config c) {
-            if (Count == RuleCount.AllThree)
+        public bool Check(Config c)
+        {
+            switch (Count)
             {
-                return c.Tiles.OfType<Tile>().Any(t => t.Properties[this.FirstProperty] == 1)
-                    && c.Tiles.OfType<Tile>().Any(t => t.Properties[this.FirstProperty] == 2)
-                    && c.Tiles.OfType<Tile>().Any(t => t.Properties[this.FirstProperty] == 3);
+                case RuleCount.Zero:
+                    return c.Tiles.OfType<Tile>().Count(t => t.Properties[FirstProperty] == FirstVariant) == 0;
+
+                case RuleCount.AtLeastOne:
+                    if (SecondProperty == null)
+                        return c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == FirstVariant);
+                    else
+                        return c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == FirstVariant && t.Properties[SecondProperty] == SecondVariant);
+
+                case RuleCount.AtLeastTwo:
+                    return c.Tiles.OfType<Tile>().Count(t => t.Properties[FirstProperty] == FirstVariant) > 1;
+
+                case RuleCount.AllThree:
+                    return c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 1)
+                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 2)
+                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 3);
             }
             return false;
         }
@@ -36,8 +50,7 @@ public partial class Zendo
         {
             if (other == null) return false;
 
-            return (
-                Count == other.Count
+            return (Count == other.Count
                 && FirstProperty == other.FirstProperty
                 && SecondProperty == other.SecondProperty
                 && FirstVariant == other.FirstVariant
@@ -46,15 +59,34 @@ public partial class Zendo
 
         public void Randomize()
         {
-            this.Count = RandomEnumValue<RuleCount>();
-            this.FirstProperty = RandomEnumValue<RuleProperty>();
-            this.FirstVariant = Rnd.Range(1, 4);
-            if (this.Count == RuleCount.AtLeastOne && Rnd.Range(0, 2) == 0)
+            Count = RandomEnumValue<RuleCount>();
+            FirstProperty = RandomEnumValue<RuleProperty>();
+            FirstVariant = Rnd.Range(1, 4);
+            if (Count == RuleCount.AtLeastOne && Rnd.Range(0, 2) == 0)
             {
-                do this.SecondProperty = RandomEnumValue<RuleProperty>();
-                while (this.SecondProperty == this.FirstProperty);
-                this.SecondVariant = Rnd.Range(1, 4);
+                do SecondProperty = RandomEnumValue<RuleProperty>();
+                while (SecondProperty == FirstProperty);
+                SecondVariant = Rnd.Range(1, 4);
             }
+        }
+
+        override public string ToString()
+        {
+            switch (Count)
+            {
+                case RuleCount.Zero:
+                    return String.Format("Zero with {0} {1}", FirstProperty, FirstVariant);
+                case RuleCount.AtLeastOne:
+                    if (SecondProperty == null)
+                        return String.Format("At least one with {0} {1}", FirstProperty, FirstVariant);
+                    else
+                        return String.Format("At least one with {0} {1} and {2} {3}", FirstProperty, FirstVariant, SecondProperty, SecondVariant);
+                case RuleCount.AtLeastTwo:
+                    return String.Format("At least two with {0} {1}", FirstProperty, FirstVariant);
+                case RuleCount.AllThree:
+                    return String.Format("All three {0}s", FirstProperty);
+            }
+            return "";
         }
     }
 
@@ -89,7 +121,7 @@ public partial class Zendo
             {
                 Tiles[i] = new Tile()
                 {
-                    Properties = new Dictionary<RuleProperty, int>()
+                    Properties = new Dictionary<RuleProperty?, int>()
                     {
                         { RuleProperty.SymbolColor, Rnd.Range(1, 4) },
                         { RuleProperty.Symbol, Rnd.Range(1, 4) },
@@ -105,15 +137,15 @@ public partial class Zendo
 
         override public string ToString()
         {
-            return String.Join(", ", this.Tiles.Select(
+            return String.Join("\n", Tiles.Select(
             t => t is Tile
             ? String.Format(
-                    "(symbol color {0}, symbol {1}, pattern color {2}, pattern {3})",
+                    "symbol color {0}, symbol {1}, pattern color {2}, pattern {3}",
                     t.Properties[RuleProperty.SymbolColor],
                     t.Properties[RuleProperty.Symbol],
                     t.Properties[RuleProperty.PatternColor],
                     t.Properties[RuleProperty.Pattern])
-            : "(empty)"
+            : "empty"
             ).ToArray());
         }
     }

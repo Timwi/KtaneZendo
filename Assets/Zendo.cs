@@ -26,16 +26,18 @@ public partial class Zendo : MonoBehaviour
     private Dictionary<string, Rule> _rules = new Dictionary<string, Rule>();
     private string[] _propertyNames = { "symbol color", "symbol", "pattern color", "pattern" };
     private Rule _masterRule;
-    private Config _playerConfig;
+    private Config _playerConfig = new Config() { Tiles = new List<Tile>() };
     private Config _followsRule;
     private Config _doesNotFollowRule;
     private List<Config> _quizzedConfigs = new List<Config>();
-    private KMSelectable _previousButton;
     private int _activeTile = -1;
     private int _guessTokens = 0;
+    private Dictionary<int, string> _symbols = new Dictionary<int, string>();
+    private Dictionary<int, string> _patterns = new Dictionary<int, string>();
 
     void Start()
     {
+
         _moduleId = _moduleIdCounter++;
 
         for (int i = 0; i < Tiles.Length; i++)
@@ -66,63 +68,11 @@ public partial class Zendo : MonoBehaviour
             GuessButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
         }
 
-        /*
-        // Define all possible rules
-        _rules = new Dictionary<string, Rule>();
-        for (var firstProperty = 0; firstProperty < 4; firstProperty++)
-        {
-            _rules.Add(String.Format("all three {0}s", _propertyNames[firstProperty]), new Rule()
-            {
-                Check = (Config c) =>
-                {
-                    return c.Tiles.OfType<Tile>().Any(t => t.Properties[firstProperty] == 1)
-                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[firstProperty] == 2)
-                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[firstProperty] == 3);
-                }
-            });
-
-            for (var firstVariant = 1; firstVariant <= 3; firstVariant++)
-            {
-                _rules.Add(String.Format("at least one with {0} {1}", _propertyNames[firstProperty], firstVariant), new Rule()
-                {
-                    Check = (Config c) =>
-                    {
-                        return c.Tiles.OfType<Tile>().Any(t => t.Properties[firstProperty] == firstVariant);
-                    }
-                });
-
-                _rules.Add(String.Format("at least two with {0} {1}", _propertyNames[firstProperty], firstVariant), new Rule()
-                {
-                    Check = (Config c) =>
-                    {
-                        return c.Tiles.OfType<Tile>().Count(t => t.Properties[firstProperty] == firstVariant) > 1;
-                    }
-                });
-
-                _rules.Add(String.Format("zero with {0} {1}", _propertyNames[firstProperty], firstVariant), new Rule()
-                {
-                    Check = (Config c) =>
-                    {
-                        return c.Tiles.OfType<Tile>().Count(t => t.Properties[firstProperty] == firstVariant) > 1;
-                    }
-                });
-
-                for (var secondProperty = firstProperty + 1; secondProperty < 4; secondProperty++)
-                {
-                    for (var secondVariant = 1; secondVariant <= 3; secondVariant++)
-                    {
-                        _rules.Add(String.Format("at least one with {0} {1} and {2} {3}", _propertyNames[firstProperty], firstVariant, _propertyNames[secondProperty], secondVariant), new Rule()
-                        {
-                            Check = (Config c) =>
-                            {
-                                return c.Tiles.OfType<Tile>().Any(t => t.Properties[firstProperty] == firstVariant)
-                                    && c.Tiles.OfType<Tile>().Any(t => t.Properties[secondProperty] == secondVariant);
-                            }
-                        });
-                    }
-                }
-            }
-        }*/
+        // Pick random symbols and patterns to use
+        var symbols = _possibleSymbols.Shuffle();
+        var patterns = _possiblePatterns.Shuffle();
+        for (var i = 1; i <= 3; i++) _symbols.Add(i, symbols[i - 1]);
+        for (var i = 1; i <= 3; i++) _patterns.Add(i, patterns[i - 1]);
 
         // Pick random rule
         _masterRule = new Rule();
@@ -134,13 +84,14 @@ public partial class Zendo : MonoBehaviour
         do _followsRule.Randomize();
         while (!_masterRule.Check(_followsRule));
         _quizzedConfigs.Add(_followsRule.Clone());
-        Debug.LogFormat("Config that matches the master rule: {0}", _followsRule.ToString());
+        Debug.LogFormat("Config that matches the master rule:\n{0}", _followsRule.ToString());
 
         // Search for random configuration that doesn't match the rule
+        _doesNotFollowRule = new Config();
         do _doesNotFollowRule.Randomize();
         while (_masterRule.Check(_doesNotFollowRule));
         _quizzedConfigs.Add(_doesNotFollowRule.Clone());
-        Debug.LogFormat("Config that doesn't match the master rule: {0}", _doesNotFollowRule.ToString());
+        Debug.LogFormat("Config that doesn't match the master rule:\n{0}", _doesNotFollowRule.ToString());
 
         // Some random guesses and a response to disprove
         for (var i = 0; i < 10; i++)
@@ -153,11 +104,11 @@ public partial class Zendo : MonoBehaviour
             var config = new Config();
             do config.Randomize();
             while (_masterRule.Check(config) == guessedRule.Check(config));
-            Debug.LogFormat("Config that disproves the guess: {0} {1}",
-                _playerConfig.ToString(),
+            Debug.LogFormat("Config that disproves the guess:\n{0}\n{1}",
+                config.ToString(),
                 (_masterRule.Check(config)
-                    ? ", because it matches the master rule, but not the guessed rule."
-                    : ", because it matches the guessed rule, but not the master rule."));
+                    ? "because it matches the master rule, but not the guessed rule."
+                    : "because it matches the guessed rule, but not the master rule."));
         }
 
         UpdateDisplay();
@@ -225,7 +176,7 @@ public partial class Zendo : MonoBehaviour
         }
 
         // Flash the button that was the actual answer
-        var followsRule = _rules[_masterRule].Check(_playerConfig);
+        var followsRule = _masterRule.Check(_playerConfig);
         StartCoroutine(FlashCaption(QuizButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>()));
 
         // First check if this config has been quized before
@@ -243,6 +194,7 @@ public partial class Zendo : MonoBehaviour
 
     private void PressGuessButton(int i)
     {
+        /*
         // No guess tokens, return
         if (_guessTokens == 0) return;
 
@@ -265,23 +217,28 @@ public partial class Zendo : MonoBehaviour
                 _activeRulePart = _ruleTree;
             }
         }
-
+        */
         UpdateDisplay();
     }
 
     private void UpdateDisplay()
-    {/*
+    {
         for (var i = 0; i < Tiles.Length; i++)
         {
-            var sprite = Tiles[i].transform.Find("Sprite").gameObject;
-            sprite.SetActive(false);
-            var tile = _config.Tiles[i];
+            GuessButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "\uf1fd";
+            var symbol = Tiles[i].transform.Find("Symbol").GetComponent<TextMesh>();
+            var pattern = Tiles[i].transform.Find("Pattern").GetComponent<TextMesh>();
+            var tile = _playerConfig.Tiles[i];
+
             if (tile is Tile)
             {
-                sprite.GetComponent<SpriteRenderer>().sprite = Sprites[(int)tile.Color * 3 + (int)tile.Symbol];
-                var rotation = tile.Direction == Direction.Left ? -90f : (tile.Direction == Direction.Right ? 90f : 0f);
-                sprite.transform.localEulerAngles = new Vector3(90, rotation, 0);
-                sprite.SetActive(true);
+                symbol.text = _fontAwesome[_symbols[tile.Properties[RuleProperty.Symbol]]];
+                pattern.text = _fontAwesome[_patterns[tile.Properties[RuleProperty.Pattern]]];
+            }
+            else
+            {
+                symbol.text = "";
+                pattern.text = "";
             }
         }
 
@@ -292,7 +249,7 @@ public partial class Zendo : MonoBehaviour
             button.transform.Find("Text").GetComponent<TextMesh>().text = "";
         }
 
-        if (_guessTokens > 0 && _activeRulePart.Children != null)
+/*        if (_guessTokens > 0 && _activeRulePart.Children != null)
         {
             for (var i = 0; i < _activeRulePart.Children.Count; i++)
             {
@@ -300,8 +257,7 @@ public partial class Zendo : MonoBehaviour
                 if (_activeRulePart.Children[i].Children != null) text += " ...";
                 GuessButtons[i].transform.Find("Text").GetComponent<TextMesh>().text = text;
             }
-        }
-        */
+        }*/
     }
 
     private IEnumerator FlashCaption(TextMesh text)
