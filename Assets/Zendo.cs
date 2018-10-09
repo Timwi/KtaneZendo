@@ -26,7 +26,7 @@ public partial class Zendo : MonoBehaviour
     private Dictionary<string, Rule> _rules = new Dictionary<string, Rule>();
     private string[] _propertyNames = { "symbol color", "symbol", "pattern color", "pattern" };
     private Rule _masterRule;
-    private Config _playerConfig = new Config() { Tiles = new List<Tile>() };
+    private Config _playerConfig = new Config() { Tiles = new List<Tile>() { null, null, null, null } };
     private Config _followsRule;
     private Config _doesNotFollowRule;
     private List<Config> _quizzedConfigs = new List<Config>();
@@ -34,6 +34,7 @@ public partial class Zendo : MonoBehaviour
     private int _guessTokens = 0;
     private Dictionary<int, string> _symbols = new Dictionary<int, string>();
     private Dictionary<int, string> _patterns = new Dictionary<int, string>();
+    private List<Color> _colors;
 
     void Start()
     {
@@ -74,6 +75,31 @@ public partial class Zendo : MonoBehaviour
         for (var i = 1; i <= 3; i++) _symbols.Add(i, symbols[i - 1]);
         for (var i = 1; i <= 3; i++) _patterns.Add(i, patterns[i - 1]);
 
+        // Pick random colors
+        var tries = 0;
+        PickColors:
+        tries++;
+        _colors = new List<Color>();
+        for (var i = 0; i < 6; i++)
+            _colors.Add(new Color(Rnd.Range(0f, 1f), Rnd.Range(0f, 1f), Rnd.Range(0f, 1f)));
+        _colors.Add(new Color(0f, 0f, 0f));
+        _colors.Add(new Color(1f, 1f, 1f));
+        for (var i = 0; i < _colors.Count; i++)
+        {
+            for (var j = i + 1; j < _colors.Count; j++)
+            {
+                var compare = ColorFormulas.DoFullCompare(
+                    (int)(_colors[i].r * 255),
+                    (int)(_colors[i].g * 255),
+                    (int)(_colors[i].b * 255),
+                    (int)(_colors[j].r * 255),
+                    (int)(_colors[j].g * 255),
+                    (int)(_colors[j].b * 255));
+                if (compare < 40) goto PickColors;
+            }
+        }
+        Debug.LogFormat("Tries: {0}", tries);
+
         // Pick random rule
         _masterRule = new Rule();
         _masterRule.Randomize();
@@ -84,6 +110,7 @@ public partial class Zendo : MonoBehaviour
         do _followsRule.Randomize();
         while (!_masterRule.Check(_followsRule));
         _quizzedConfigs.Add(_followsRule.Clone());
+        _playerConfig = _followsRule;
         Debug.LogFormat("Config that matches the master rule:\n{0}", _followsRule.ToString());
 
         // Search for random configuration that doesn't match the rule
@@ -225,7 +252,6 @@ public partial class Zendo : MonoBehaviour
     {
         for (var i = 0; i < Tiles.Length; i++)
         {
-            GuessButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "\uf1fd";
             var symbol = Tiles[i].transform.Find("Symbol").GetComponent<TextMesh>();
             var pattern = Tiles[i].transform.Find("Pattern").GetComponent<TextMesh>();
             var tile = _playerConfig.Tiles[i];
@@ -233,7 +259,9 @@ public partial class Zendo : MonoBehaviour
             if (tile is Tile)
             {
                 symbol.text = _fontAwesome[_symbols[tile.Properties[RuleProperty.Symbol]]];
+                symbol.color = _colors[tile.Properties[RuleProperty.SymbolColor] - 1];
                 pattern.text = _fontAwesome[_patterns[tile.Properties[RuleProperty.Pattern]]];
+                pattern.color = _colors[tile.Properties[RuleProperty.PatternColor] + 2];
             }
             else
             {
