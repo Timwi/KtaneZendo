@@ -16,6 +16,7 @@ public partial class Zendo : MonoBehaviour
     public KMSelectable[] TileButtons;
     public KMSelectable[] GuessButtons;
     public KMSelectable[] RuleButtons;
+    public KMSelectable[] ModeButtons;
     public TextMesh GuessTokens;
 
     private int _moduleId;
@@ -66,6 +67,13 @@ public partial class Zendo : MonoBehaviour
             var j = i;
             RuleButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
             RuleButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
+        }
+
+        for (int i = 0; i < ModeButtons.Length; i++)
+        {
+            var j = i;
+            ModeButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
+            ModeButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressModeButton(j); };
         }
 
         // Pick random symbols and patterns to use
@@ -138,6 +146,11 @@ public partial class Zendo : MonoBehaviour
         }
 
         UpdateDisplay();
+    }
+
+    private void PressModeButton(int j)
+    {
+
     }
 
     private IEnumerator HandleLongPress()
