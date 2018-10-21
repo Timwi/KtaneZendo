@@ -14,8 +14,8 @@ public partial class Zendo : MonoBehaviour
     public Sprite[] Sprites;
     public KMSelectable[] Tiles;
     public KMSelectable[] TileButtons;
-    public KMSelectable[] QuizButtons;
     public KMSelectable[] GuessButtons;
+    public KMSelectable[] RuleButtons;
     public TextMesh GuessTokens;
 
     private int _moduleId;
@@ -38,7 +38,6 @@ public partial class Zendo : MonoBehaviour
 
     void Start()
     {
-
         _moduleId = _moduleIdCounter++;
 
         for (int i = 0; i < Tiles.Length; i++)
@@ -55,18 +54,18 @@ public partial class Zendo : MonoBehaviour
             TileButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressTileButton(j); };
         }
 
-        for (int i = 0; i < QuizButtons.Length; i++)
-        {
-            var j = i;
-            QuizButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
-            QuizButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressQuizButton(j); };
-        }
-
         for (int i = 0; i < GuessButtons.Length; i++)
         {
             var j = i;
             GuessButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
-            GuessButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
+            GuessButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressQuizButton(j); };
+        }
+
+        for (int i = 0; i < RuleButtons.Length; i++)
+        {
+            var j = i;
+            RuleButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
+            RuleButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
         }
 
         // Pick random symbols and patterns to use
@@ -204,7 +203,7 @@ public partial class Zendo : MonoBehaviour
 
         // Flash the button that was the actual answer
         var followsRule = _masterRule.Check(_playerConfig);
-        StartCoroutine(FlashCaption(QuizButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>()));
+        StartCoroutine(FlashCaption(GuessButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>()));
 
         // First check if this config has been quized before
         foreach (var config in _quizzedConfigs)
@@ -272,7 +271,7 @@ public partial class Zendo : MonoBehaviour
 
         GuessTokens.text = _guessTokens.ToString();
 
-        foreach (var button in GuessButtons)
+        foreach (var button in RuleButtons)
         {
             button.transform.Find("Text").GetComponent<TextMesh>().text = "";
         }
