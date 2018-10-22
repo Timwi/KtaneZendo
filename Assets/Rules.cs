@@ -11,6 +11,16 @@ public partial class Zendo
 
     class Tile
     {
+        public Tile()
+        {
+            Properties = new Dictionary<RuleProperty?, int>()
+            {
+                { RuleProperty.SymbolColor, 1 },
+                { RuleProperty.Symbol, 1 },
+                { RuleProperty.PatternColor, 1 },
+                { RuleProperty.Pattern, 1 },
+            };
+        }
         public Dictionary<RuleProperty?, int> Properties { get; set; }
     }
 

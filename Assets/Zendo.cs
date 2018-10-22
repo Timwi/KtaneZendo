@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using KmHelper;
 using Rnd = UnityEngine.Random;
 using Assets;
 
@@ -16,14 +15,13 @@ public partial class Zendo : MonoBehaviour
     public KMSelectable[] TileButtons;
     public KMSelectable[] GuessButtons;
     public KMSelectable[] RuleButtons;
-    public KMSelectable[] ModeButtons;
+    public KMSelectable ModeButton;
     public TextMesh GuessTokens;
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
     private bool _isButtonDown, _isLongPress;
     private Coroutine _buttonDownCoroutine;
-
     private Dictionary<string, Rule> _rules = new Dictionary<string, Rule>();
     private string[] _propertyNames = { "symbol color", "symbol", "pattern color", "pattern" };
     private Rule _masterRule;
@@ -35,7 +33,9 @@ public partial class Zendo : MonoBehaviour
     private int _guessTokens = 0;
     private Dictionary<int, string> _symbols = new Dictionary<int, string>();
     private Dictionary<int, string> _patterns = new Dictionary<int, string>();
-    private List<Color> _colors;
+    private List<Color> _colors = new List<Color>();
+    private enum Mode { Question, Answer }
+    private Mode _mode = Mode.Answer;
 
     void Start()
     {
@@ -69,12 +69,8 @@ public partial class Zendo : MonoBehaviour
             RuleButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressGuessButton(j); };
         }
 
-        for (int i = 0; i < ModeButtons.Length; i++)
-        {
-            var j = i;
-            ModeButtons[i].OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
-            ModeButtons[i].OnInteractEnded += delegate () { HandleButtonUp(); PressModeButton(j); };
-        }
+        ModeButton.OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
+        ModeButton.OnInteractEnded += delegate () { HandleButtonUp(); PressModeButton(); };
 
         // Pick random symbols and patterns to use
         var symbols = _possibleSymbols.Shuffle();
@@ -83,29 +79,14 @@ public partial class Zendo : MonoBehaviour
         for (var i = 1; i <= 3; i++) _patterns.Add(i, patterns[i - 1]);
 
         // Pick random colors
-        var tries = 0;
-        PickColors:
-        tries++;
-        _colors = new List<Color>();
-        for (var i = 0; i < 6; i++)
-            _colors.Add(new Color(Rnd.Range(0f, 1f), Rnd.Range(0f, 1f), Rnd.Range(0f, 1f)));
-        _colors.Add(new Color(0f, 0f, 0f));
-        _colors.Add(new Color(1f, 1f, 1f));
-        for (var i = 0; i < _colors.Count; i++)
+        var lightnesses = new float[] { .25f, .75f };
+        foreach (var lightness in lightnesses)
         {
-            for (var j = i + 1; j < _colors.Count; j++)
-            {
-                var compare = ColorFormulas.DoFullCompare(
-                    (int)(_colors[i].r * 255),
-                    (int)(_colors[i].g * 255),
-                    (int)(_colors[i].b * 255),
-                    (int)(_colors[j].r * 255),
-                    (int)(_colors[j].g * 255),
-                    (int)(_colors[j].b * 255));
-                if (compare < 40) goto PickColors;
-            }
+            int[] hues;
+            do hues = new int[] { Rnd.Range(0, 360), Rnd.Range(0, 360), Rnd.Range(0, 360) };
+            while (!Colors.EnoughDistance(hues));
+            foreach (var hue in hues) _colors.Add(Colors.HslToColor(hue, 1f, lightness));
         }
-        Debug.LogFormat("Tries: {0}", tries);
 
         // Pick random rule
         _masterRule = new Rule();
@@ -148,7 +129,7 @@ public partial class Zendo : MonoBehaviour
         UpdateDisplay();
     }
 
-    private void PressModeButton(int j)
+    private void PressModeButton()
     {
 
     }
@@ -262,6 +243,8 @@ public partial class Zendo : MonoBehaviour
 
     private void UpdateDisplay()
     {
+        ModeButton.transform.Find("Text").GetComponent<TextMesh>().text = _mode == Mode.Question ? "?" : "!";
+
         for (var i = 0; i < Tiles.Length; i++)
         {
             var symbol = Tiles[i].transform.Find("Symbol").GetComponent<TextMesh>();
