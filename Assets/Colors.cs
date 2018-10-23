@@ -51,13 +51,13 @@ class Colors
 
     public static bool EnoughDistance(int[] hues)
     {
-        int min = 100;
+        int min = 80;
         for (var i = 0; i < hues.Length; i++)
         {
             for (var j = i + 1; j < hues.Length; j++)
             {
                 if (Math.Abs(hues[i] - hues[j]) < min) return false;
-                if (Math.Abs(hues[i] - hues[j] - 360) < min) return false;
+                if (Math.Abs(Math.Abs(hues[i] - hues[j]) - 360) < min) return false;
             }
         }
         return true;

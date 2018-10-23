@@ -87,6 +87,7 @@ public partial class Zendo : MonoBehaviour
             int[] hues;
             do hues = new int[] { Rnd.Range(0, 360), Rnd.Range(0, 360), Rnd.Range(0, 360) };
             while (!Colors.EnoughDistance(hues));
+            Debug.LogFormat("Hues: {0}, {1}, {2}", hues[0], hues[1], hues[2]);
             foreach (var hue in hues) _colors.Add(Colors.HslToColor(hue, 1f, lightness));
         }
 

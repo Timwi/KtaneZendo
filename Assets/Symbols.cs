@@ -17,7 +17,6 @@ public partial class Zendo
         "book",
         "bug",
         "building",
-        "bullhorn",
         "bus",
         "camera",
         "car",
@@ -43,15 +42,12 @@ public partial class Zendo
         "flask",
         "frog",
         "frown",
-        "ghost",
         "gift",
         "glass-martini",
         "helicopter",
         "home",
-        "horse",
         "key",
         "leaf",
-        "lemon",
         "lightbulb",
         "motorcycle",
         "music",
@@ -80,11 +76,11 @@ public partial class Zendo
         { "flag", -.5f },
         { "folder", .4f },
         { "heart", 0f },
+        { "lemon", 0f },
         { "map-marker", -.6f },
         { "square", 0f },
         { "splotch", 0f },
-        { "square-full", 0f },
-        { "star", 0f }
+        { "square-full", 0f }
     };
 
     private Dictionary<string, string> _fontAwesome = new Dictionary<string, string>()
