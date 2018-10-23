@@ -8,7 +8,6 @@ public partial class Zendo
         "atom",
         "balance-scale",
         "bell",
-        "bible",
         "bicycle",
         "binoculars",
         "birthday-cake",
@@ -43,17 +42,50 @@ public partial class Zendo
         "fish",
         "flask",
         "frog",
+        "frown",
+        "ghost",
+        "gift",
+        "glass-martini",
+        "helicopter",
+        "home",
+        "horse",
+        "key",
+        "leaf",
+        "lemon",
+        "lightbulb",
+        "motorcycle",
+        "music",
+        "paint-brush",
+        "paper-plane",
+        "paperclip",
+        "paw",
+        "pen",
+        "puzzle-piece",
+        "robot",
+        "rocket",
+        "skull",
+        "smile",
+        "suitcase",
+        "tree",
+        "tshirt",
+        "umbrella"
     });
 
-    private List<string> _possiblePatterns = new List<string>(new string[] {
-        "bookmark",
-        "circle",
-        "certificate",
-        "cloud",
-        "comment",
-        "flag",
-        "folder",
-    });
+    private Dictionary<string, float> _possiblePatterns = new Dictionary<string, float>()
+    {
+        { "bookmark", -.2f },
+        { "circle", 0f },
+        { "certificate", 0f },
+        { "comment", -.2f },
+        { "flag", -.5f },
+        { "folder", .4f },
+        { "heart", 0f },
+        { "map-marker", -.6f },
+        { "square", 0f },
+        { "splotch", 0f },
+        { "square-full", 0f },
+        { "star", 0f }
+    };
 
     private Dictionary<string, string> _fontAwesome = new Dictionary<string, string>()
     {

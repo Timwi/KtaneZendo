@@ -74,9 +74,11 @@ public partial class Zendo : MonoBehaviour
 
         // Pick random symbols and patterns to use
         var symbols = _possibleSymbols.Shuffle();
-        var patterns = _possiblePatterns.Shuffle();
+        var patterns = _possiblePatterns.Keys.ToList().Shuffle();
         for (var i = 1; i <= 3; i++) _symbols.Add(i, symbols[i - 1]);
         for (var i = 1; i <= 3; i++) _patterns.Add(i, patterns[i - 1]);
+        Debug.LogFormat("Symbols: {0}, {1}, {2}", _symbols[1], _symbols[2], _symbols[3]);
+        Debug.LogFormat("Patterns: {0}, {1}, {2}", _patterns[1], _patterns[2], _patterns[3]);
 
         // Pick random colors
         var lightnesses = new float[] { .25f, .75f };
@@ -108,23 +110,23 @@ public partial class Zendo : MonoBehaviour
         _quizzedConfigs.Add(_doesNotFollowRule.Clone());
         Debug.LogFormat("Config that doesn't match the master rule:\n{0}", _doesNotFollowRule.ToString());
 
-        // Some random guesses and a response to disprove
-        for (var i = 0; i < 10; i++)
-        {
-            var guessedRule = new Rule();
-            do guessedRule.Randomize();
-            while (guessedRule == _masterRule);
-            Debug.LogFormat("Random guess: {0}", guessedRule);
+        //// Some random guesses and a response to disprove
+        //for (var i = 0; i < 10; i++)
+        //{
+        //    var guessedRule = new Rule();
+        //    do guessedRule.Randomize();
+        //    while (guessedRule == _masterRule);
+        //    Debug.LogFormat("Random guess: {0}", guessedRule);
 
-            var config = new Config();
-            do config.Randomize();
-            while (_masterRule.Check(config) == guessedRule.Check(config));
-            Debug.LogFormat("Config that disproves the guess:\n{0}\n{1}",
-                config.ToString(),
-                (_masterRule.Check(config)
-                    ? "because it matches the master rule, but not the guessed rule."
-                    : "because it matches the guessed rule, but not the master rule."));
-        }
+        //    var config = new Config();
+        //    do config.Randomize();
+        //    while (_masterRule.Check(config) == guessedRule.Check(config));
+        //    Debug.LogFormat("Config that disproves the guess:\n{0}\n{1}",
+        //        config.ToString(),
+        //        (_masterRule.Check(config)
+        //            ? "because it matches the master rule, but not the guessed rule."
+        //            : "because it matches the guessed rule, but not the master rule."));
+        //}
 
         UpdateDisplay();
     }
@@ -247,21 +249,23 @@ public partial class Zendo : MonoBehaviour
 
         for (var i = 0; i < Tiles.Length; i++)
         {
-            var symbol = Tiles[i].transform.Find("Symbol").GetComponent<TextMesh>();
-            var pattern = Tiles[i].transform.Find("Pattern").GetComponent<TextMesh>();
+            var symbolText = Tiles[i].transform.Find("Symbol").GetComponent<TextMesh>();
+            var patternObj = Tiles[i].transform.Find("Pattern");
+            var patternText = patternObj.GetComponent<TextMesh>();
             var tile = _playerConfig.Tiles[i];
 
             if (tile is Tile)
             {
-                symbol.text = _fontAwesome[_symbols[tile.Properties[RuleProperty.Symbol]]];
-                symbol.color = _colors[tile.Properties[RuleProperty.SymbolColor] - 1];
-                pattern.text = _fontAwesome[_patterns[tile.Properties[RuleProperty.Pattern]]];
-                pattern.color = _colors[tile.Properties[RuleProperty.PatternColor] + 2];
+                symbolText.text = _fontAwesome[_symbols[tile.Properties[RuleProperty.Symbol]]];
+                symbolText.color = _colors[tile.Properties[RuleProperty.SymbolColor] - 1];
+                patternObj.localPosition = new Vector3(0f, 0f, _possiblePatterns[_patterns[tile.Properties[RuleProperty.Pattern]]]);
+                patternText.text = _fontAwesome[_patterns[tile.Properties[RuleProperty.Pattern]]];
+                patternText.color = _colors[tile.Properties[RuleProperty.PatternColor] + 2];
             }
             else
             {
-                symbol.text = "";
-                pattern.text = "";
+                symbolText.text = "";
+                patternText.text = "";
             }
         }
 
