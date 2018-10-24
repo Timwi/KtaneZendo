@@ -7,7 +7,7 @@ using Assets;
 public partial class Zendo
 {
     enum RuleCount { Zero, AtLeastOne, AtLeastTwo, AllThree }
-    enum RuleProperty { SymbolColor, Symbol, PatternColor, Pattern }
+    enum RuleProperty { SymbolColor, Symbol, BackColor, BackSymbol }
 
     class Tile
     {
@@ -17,8 +17,8 @@ public partial class Zendo
             {
                 { RuleProperty.SymbolColor, 1 },
                 { RuleProperty.Symbol, 1 },
-                { RuleProperty.PatternColor, 1 },
-                { RuleProperty.Pattern, 1 },
+                { RuleProperty.BackColor, 1 },
+                { RuleProperty.BackSymbol, 1 },
             };
         }
         public Dictionary<RuleProperty?, int> Properties { get; set; }
@@ -135,8 +135,8 @@ public partial class Zendo
                     {
                         { RuleProperty.SymbolColor, Rnd.Range(1, 4) },
                         { RuleProperty.Symbol, Rnd.Range(1, 4) },
-                        { RuleProperty.PatternColor, Rnd.Range(1, 4) },
-                        { RuleProperty.Pattern, Rnd.Range(1, 4) },
+                        { RuleProperty.BackColor, Rnd.Range(1, 4) },
+                        { RuleProperty.BackSymbol, Rnd.Range(1, 4) },
                     }
                 };
             }
@@ -153,8 +153,8 @@ public partial class Zendo
                     "symbol color {0}, symbol {1}, pattern color {2}, pattern {3}",
                     t.Properties[RuleProperty.SymbolColor],
                     t.Properties[RuleProperty.Symbol],
-                    t.Properties[RuleProperty.PatternColor],
-                    t.Properties[RuleProperty.Pattern])
+                    t.Properties[RuleProperty.BackColor],
+                    t.Properties[RuleProperty.BackSymbol])
             : "empty"
             ).ToArray());
         }

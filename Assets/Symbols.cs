@@ -2,7 +2,7 @@
 
 public partial class Zendo
 {
-    private List<string> _possibleSymbols = new List<string>(new string[] {
+    private List<string> _possibleFrontSymbols = new List<string>(new string[] {
         "anchor",
         "ankh",
         "atom",
@@ -44,7 +44,6 @@ public partial class Zendo
         "frown",
         "gift",
         "glass-martini",
-        "helicopter",
         "home",
         "key",
         "leaf",
@@ -67,7 +66,7 @@ public partial class Zendo
         "umbrella"
     });
 
-    private Dictionary<string, float> _possiblePatterns = new Dictionary<string, float>()
+    private Dictionary<string, float> _possibleBackSymbols = new Dictionary<string, float>()
     {
         { "bookmark", -.2f },
         { "circle", 0f },
@@ -79,8 +78,7 @@ public partial class Zendo
         { "lemon", 0f },
         { "map-marker", -.6f },
         { "square", 0f },
-        { "splotch", 0f },
-        { "square-full", 0f }
+        { "splotch", 0f }
     };
 
     private Dictionary<string, string> _fontAwesome = new Dictionary<string, string>()
