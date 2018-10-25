@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Rnd = UnityEngine.Random;
 using Assets;
+using UnityEngine;
 
 public partial class Zendo
 {
     enum RuleCount { Zero, AtLeastOne, AtLeastTwo, AllThree }
-    enum RuleProperty { SymbolColor, Symbol, BackColor, BackSymbol }
+    enum RuleProperty { FrontColor, FrontSymbol, BackColor, BackSymbol }
 
     class Tile
     {
@@ -15,8 +16,8 @@ public partial class Zendo
         {
             Properties = new Dictionary<RuleProperty?, int>()
             {
-                { RuleProperty.SymbolColor, 1 },
-                { RuleProperty.Symbol, 1 },
+                { RuleProperty.FrontColor, 1 },
+                { RuleProperty.FrontSymbol, 1 },
                 { RuleProperty.BackColor, 1 },
                 { RuleProperty.BackSymbol, 1 },
             };
@@ -26,7 +27,7 @@ public partial class Zendo
 
     class Rule : IEquatable<Rule>
     {
-        public RuleCount Count { get; set; }
+        public RuleCount? Count { get; set; }
         public RuleProperty FirstProperty { get; set; }
         public RuleProperty? SecondProperty { get; set; }
         public int FirstVariant { get; set; }
@@ -98,6 +99,26 @@ public partial class Zendo
             }
             return "";
         }
+
+        // Use button -1 to initialize
+        public void Update(int button, KMSelectable[] ruleButtons)
+        {
+            if (button == -1)
+            {
+                ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "ZERO";
+                ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "AT\nLEAST\nONE";
+                ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "AT\nLEAST\nTWO";
+                ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "ALL\nTHREE";
+            }
+            else if (!Count.HasValue)
+            {
+                Count = (RuleCount)button;
+                ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR";
+                ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL";
+                ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR";
+                ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL";
+            }
+        }
     }
 
     class Config : IEquatable<Config>
@@ -133,8 +154,8 @@ public partial class Zendo
                 {
                     Properties = new Dictionary<RuleProperty?, int>()
                     {
-                        { RuleProperty.SymbolColor, Rnd.Range(1, 4) },
-                        { RuleProperty.Symbol, Rnd.Range(1, 4) },
+                        { RuleProperty.FrontColor, Rnd.Range(1, 4) },
+                        { RuleProperty.FrontSymbol, Rnd.Range(1, 4) },
                         { RuleProperty.BackColor, Rnd.Range(1, 4) },
                         { RuleProperty.BackSymbol, Rnd.Range(1, 4) },
                     }
@@ -151,8 +172,8 @@ public partial class Zendo
             t => t is Tile
             ? String.Format(
                     "symbol color {0}, symbol {1}, pattern color {2}, pattern {3}",
-                    t.Properties[RuleProperty.SymbolColor],
-                    t.Properties[RuleProperty.Symbol],
+                    t.Properties[RuleProperty.FrontColor],
+                    t.Properties[RuleProperty.FrontSymbol],
                     t.Properties[RuleProperty.BackColor],
                     t.Properties[RuleProperty.BackSymbol])
             : "empty"

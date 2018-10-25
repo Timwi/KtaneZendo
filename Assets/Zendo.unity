@@ -339,7 +339,7 @@ Transform:
   m_GameObject: {fileID: 45454772}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.01, z: 0}
-  m_LocalScale: {x: 0.16, y: 0.16, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 434133947}
   m_RootOrder: 1
@@ -352,7 +352,7 @@ TextMesh:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 45454772}
-  m_Text: "\uF165"
+  m_Text: "\uF111"
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1
@@ -365,7 +365,7 @@ TextMesh:
   m_Font: {fileID: 12800000, guid: d432025e4f435d1498e22df879e660d6, type: 3}
   m_Color:
     serializedVersion: 2
-    rgba: 4282203453
+    rgba: 4278190080
 --- !u!23 &45454775
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -411,7 +411,7 @@ GameObject:
   - component: {fileID: 45820668}
   - component: {fileID: 45820667}
   m_Layer: 0
-  m_Name: Pattern
+  m_Name: Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -498,7 +498,7 @@ GameObject:
   - component: {fileID: 54799766}
   - component: {fileID: 54799765}
   m_Layer: 0
-  m_Name: Symbol
+  m_Name: Front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1193,7 +1193,7 @@ GameObject:
   - component: {fileID: 429787247}
   - component: {fileID: 429787246}
   m_Layer: 0
-  m_Name: Pattern
+  m_Name: Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2311,7 +2311,7 @@ GameObject:
   - component: {fileID: 756111403}
   - component: {fileID: 756111402}
   m_Layer: 0
-  m_Name: Pattern
+  m_Name: Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4359,7 +4359,7 @@ Transform:
   m_GameObject: {fileID: 1460032009}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.01, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
   m_Children: []
   m_Father: {fileID: 1256688306}
   m_RootOrder: 1
@@ -4607,7 +4607,7 @@ GameObject:
   - component: {fileID: 1516251780}
   - component: {fileID: 1516251779}
   m_Layer: 0
-  m_Name: Symbol
+  m_Name: Front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4810,7 +4810,7 @@ GameObject:
   - component: {fileID: 1612168772}
   - component: {fileID: 1612168771}
   m_Layer: 0
-  m_Name: Symbol
+  m_Name: Front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4909,7 +4909,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1658608745}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2, y: 1.1, z: -2.2}
+  m_LocalPosition: {x: -2, y: 1.1, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 959663597}
@@ -5020,7 +5020,7 @@ GameObject:
   - component: {fileID: 1682377514}
   - component: {fileID: 1682377513}
   m_Layer: 0
-  m_Name: Symbol
+  m_Name: Front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5687,7 +5687,7 @@ GameObject:
   - component: {fileID: 1958445901}
   - component: {fileID: 1958445900}
   m_Layer: 0
-  m_Name: Pattern
+  m_Name: Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5878,7 +5878,7 @@ Transform:
   m_GameObject: {fileID: 1975792718}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.01, z: 0}
-  m_LocalScale: {x: 0.16, y: 0.16, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 1287194571}
   m_RootOrder: 1
@@ -5891,7 +5891,7 @@ TextMesh:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1975792718}
-  m_Text: "\uF164"
+  m_Text: "\uF058"
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1

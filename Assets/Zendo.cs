@@ -21,9 +21,9 @@ public partial class Zendo : MonoBehaviour
     private static int _moduleIdCounter = 1;
     private bool _isButtonDown, _isLongPress;
     private Coroutine _buttonDownCoroutine;
-    private Dictionary<string, Rule> _rules = new Dictionary<string, Rule>();
     private string[] _propertyNames = { "front color", "front symbol", "back color", "back symbol" };
     private Rule _masterRule;
+    private Rule _guessRule = new Rule();
     private Config _playerConfig = new Config() { Tiles = new List<Tile>() { null, null, null, null } };
     private Config _currentConfig;
     private Config _followsRuleConfig;
@@ -173,66 +173,52 @@ public partial class Zendo : MonoBehaviour
 
     private void PressFollowButton(int i)
     {
-        // In answer mode, show the latest answer that follows / doesn't follow the rule
+        // Answer mode?
         if (_mode == Mode.Answer)
         {
-            _currentConfig = (i == 0 ? _followsRuleConfig : _doesNotFollowRuleConfig);
-            _currentAnswerConfigFollowsRule = (i == 0);
-            UpdateDisplay();
-            return;
+            // Long press?
+            if (_isLongPress)
+            {
+                // Copy the follows / doesn't follow config to the player config
+                _playerConfig = (i == 0 ? _followsRuleConfig : _doesNotFollowRuleConfig);
+                _currentConfig = _playerConfig;
+                _mode = Mode.Question;
+            }
+
+            // Normal press?
+            else
+            {
+                // Show the latest answer that follows / doesn't follow the rule
+                _currentConfig = (i == 0 ? _followsRuleConfig : _doesNotFollowRuleConfig);
+                _currentAnswerConfigFollowsRule = (i == 0);
+            }
+
         }
 
-        // If long press, just show one of the initial configs
-        if (_isLongPress)
+        // Question mode?
+        else
         {
-            _currentConfig = (i == 0 ? _followsRuleConfig : _doesNotFollowRuleConfig);
-            UpdateDisplay();
-            return;
+            // Flash the button that was the actual answer
+            var followsRule = _masterRule.Check(_currentConfig);
+            StartCoroutine(FlashFollowButton(followsRule));
+
+            // First check if this config has been quizzed before
+            foreach (var config in _quizzedConfigs)
+                if (_currentConfig.Equals(config)) return;
+            _quizzedConfigs.Add(_currentConfig.Clone());
+
+            // Allow guessing rule if guessed correctly
+            if ((i == 0 && followsRule) || (i == 1 && !followsRule))
+                _canGuess = true;
         }
 
-        // Flash the button that was the actual answer
-        var followsRule = _masterRule.Check(_currentConfig);
-        StartCoroutine(FlashCaption(FollowButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>()));
-
-        // First check if this config has been quizzed before
-        foreach (var config in _quizzedConfigs)
-            if (_currentConfig.Equals(config)) return;
-        _quizzedConfigs.Add(_currentConfig.Clone());
-
-        // Allow guessing rule if guessed correctly
-        if ((i == 0 && followsRule) || (i == 1 && !followsRule))
-            _canGuess = true;
-
-        // Update display
         UpdateDisplay();
     }
 
     private void PressRuleButton(int i)
     {
-        /*
-        // No guess tokens, return
-        if (_guessTokens == 0) return;
+        _guessRule.Update(i, RuleButtons);
 
-        // Empty button, return
-        if (i >= _activeRulePart.Children.Count) return;
-
-        // One step further to define rule
-        _activeRulePart = _activeRulePart.Children[i];
-
-        // No child rule parts, rule is finished
-        if (_activeRulePart.Children == null)
-        {
-            if (_activeRulePart.Rule == _masterRule)
-            {
-                Module.HandlePass();
-            }
-            else
-            {
-                _guessTokens--;
-                _activeRulePart = _ruleTree;
-            }
-        }
-        */
         UpdateDisplay();
     }
 
@@ -256,11 +242,14 @@ public partial class Zendo : MonoBehaviour
     private void UpdateDisplay()
     {
         ModeButton.transform.Find("Text").GetComponent<TextMesh>().text = _mode == Mode.Question ? "?" : "!";
-        if (_mode == Mode.Answer)
-        {
-            FollowButtons[0].transform.Find("Text").GetComponent<TextMesh>().color = (_currentAnswerConfigFollowsRule ? enabledColor : disabledColor);
-            FollowButtons[1].transform.Find("Text").GetComponent<TextMesh>().color = (_currentAnswerConfigFollowsRule ? disabledColor : enabledColor);
-        }
+        FollowButtons[0].transform.Find("Text").GetComponent<TextMesh>().text =
+            _currentAnswerConfigFollowsRule && _mode == Mode.Answer
+            ? _fontAwesome["check-circle"]
+            : _fontAwesome["circle"];
+        FollowButtons[1].transform.Find("Text").GetComponent<TextMesh>().text =
+            !_currentAnswerConfigFollowsRule && _mode == Mode.Answer
+            ? _fontAwesome["check-circle"]
+            : _fontAwesome["circle"];
 
         for (var i = 0; i < Tiles.Length; i++)
         {
@@ -271,9 +260,11 @@ public partial class Zendo : MonoBehaviour
 
             if (tile is Tile)
             {
-                frontSymbolText.text = _fontAwesome[_frontSymbols[tile.Properties[RuleProperty.Symbol]]];
-                frontSymbolText.color = _colors[tile.Properties[RuleProperty.SymbolColor] - 1];
-                backSymbolObj.localPosition = new Vector3(0f, 0f, _possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]]);
+                frontSymbolText.text = _fontAwesome[_frontSymbols[tile.Properties[RuleProperty.FrontSymbol]]];
+                frontSymbolText.color = _colors[tile.Properties[RuleProperty.FrontColor] - 1];
+
+                if (_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]] is Vector3)
+                    backSymbolObj.localPosition = (Vector3)_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
                 backSymbolText.text = _fontAwesome[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
                 backSymbolText.color = _colors[tile.Properties[RuleProperty.BackColor] + 2];
             }
@@ -284,40 +275,30 @@ public partial class Zendo : MonoBehaviour
             }
         }
 
-        foreach (var button in RuleButtons)
+        if (_canGuess)
         {
-            button.transform.Find("Text").GetComponent<TextMesh>().text = "";
+            _guessRule.Update(-1, RuleButtons);
         }
-
-        /*        if (_guessTokens > 0 && _activeRulePart.Children != null)
-                {
-                    for (var i = 0; i < _activeRulePart.Children.Count; i++)
-                    {
-                        var text = _activeRulePart.Children[i].Text;
-                        if (_activeRulePart.Children[i].Children != null) text += " ...";
-                        GuessButtons[i].transform.Find("Text").GetComponent<TextMesh>().text = text;
-                    }
-                }*/
+        else
+        {
+            foreach (var button in RuleButtons)
+            {
+                button.transform.Find("Text").GetComponent<TextMesh>().text = "";
+                button.transform.Find("Front").GetComponent<TextMesh>().text = "";
+                button.transform.Find("Back").GetComponent<TextMesh>().text = "";
+            }
+        }
     }
 
-    private IEnumerator FlashCaption(TextMesh text)
+    private IEnumerator FlashFollowButton(bool followsRule)
     {
-        const float durationPerPing = .3f;
-        var original = text.color;
-
-        bool forward = true;
-        for (var i = 0; i < 3; i++)
+        yield return null;
+        var text = FollowButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>();
+        for (var i = 0; i < 6; i++)
         {
-            for (float time = 0f; time < durationPerPing; time += Time.deltaTime)
-            {
-                yield return null;
-
-                float f = Mathf.SmoothStep(forward ? 0 : 1, forward ? 1 : 0, time / durationPerPing);
-                text.color = new UnityEngine.Color(f, f, f);
-            }
-            forward = !forward;
+            text.text = (i % 2 == 0) ? _fontAwesome["check-circle"] : _fontAwesome["circle"];
+            yield return new WaitForSeconds(.15f);
         }
-        text.color = original;
     }
 
     private IEnumerator HandleLongPress()

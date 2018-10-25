@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public partial class Zendo
 {
@@ -66,19 +67,19 @@ public partial class Zendo
         "umbrella"
     });
 
-    private Dictionary<string, float> _possibleBackSymbols = new Dictionary<string, float>()
+    private Dictionary<string, Vector3?> _possibleBackSymbols = new Dictionary<string, Vector3?>()
     {
-        { "bookmark", -.2f },
-        { "circle", 0f },
-        { "certificate", 0f },
-        { "comment", -.2f },
-        { "flag", -.5f },
-        { "folder", .4f },
-        { "heart", 0f },
-        { "lemon", 0f },
-        { "map-marker", -.6f },
-        { "square", 0f },
-        { "splotch", 0f }
+        { "bookmark", new Vector3(0f, 0f, -.2f) },
+        { "circle", null },
+        { "certificate", null },
+        { "comment", new Vector3(0f, 0f, -.2f) },
+        { "flag", new Vector3(0f, 0f, -.5f) },
+        { "folder", new Vector3(0f, 0f, .4f) },
+        { "heart", null },
+        { "lemon", null },
+        { "map-marker", new Vector3(0f, 0f, -.6f) },
+        { "square", null },
+        { "splotch", new Vector3(.2f, 0f, 0f) }
     };
 
     private Dictionary<string, string> _fontAwesome = new Dictionary<string, string>()
