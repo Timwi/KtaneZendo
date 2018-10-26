@@ -37,8 +37,6 @@ public partial class Zendo : MonoBehaviour
     private List<Color> _colors = new List<Color>();
     private enum Mode { Question, Answer }
     private Mode _mode = Mode.Answer;
-    private Color enabledColor = new Color(1f, 1f, 1f);
-    private Color disabledColor = new Color(.25f, .25f, .25f);
 
     void Start()
     {
@@ -78,10 +76,10 @@ public partial class Zendo : MonoBehaviour
         // Pick random symbols
         var frontSymbols = _possibleFrontSymbols.Shuffle();
         var backSymbols = _possibleBackSymbols.Keys.ToList().Shuffle();
-        for (var i = 1; i <= 3; i++) _frontSymbols.Add(i, frontSymbols[i - 1]);
-        for (var i = 1; i <= 3; i++) _backSymbols.Add(i, backSymbols[i - 1]);
-        Debug.LogFormat("Front symbols: {0}, {1}, {2}", _frontSymbols[1], _frontSymbols[2], _frontSymbols[3]);
-        Debug.LogFormat("Back symbols: {0}, {1}, {2}", _backSymbols[1], _backSymbols[2], _backSymbols[3]);
+        for (var i = 0; i < 3; i++) _frontSymbols.Add(i, frontSymbols[i]);
+        for (var i = 0; i < 3; i++) _backSymbols.Add(i, backSymbols[i]);
+        Debug.LogFormat("Front symbols: {0}, {1}, {2}", _frontSymbols[0], _frontSymbols[1], _frontSymbols[2]);
+        Debug.LogFormat("Back symbols: {0}, {1}, {2}", _backSymbols[0], _backSymbols[1], _backSymbols[2]);
 
         // Pick random colors
         var lightnesses = new float[] { .25f, .75f };
@@ -98,6 +96,13 @@ public partial class Zendo : MonoBehaviour
         _masterRule = new Rule();
         _masterRule.Randomize();
         Debug.LogFormat("Random rule: {0}", _masterRule);
+
+        // Setup rule stuff
+        _guessRule.ClearButtons(RuleButtons);
+        Rule.Colors = _colors;
+        Rule.FontAwesome = _fontAwesome;
+        Rule.FrontSymbols = _frontSymbols;
+        Rule.BackSymbols = _backSymbols;
 
         // Search for random configuration that matches the rule
         _followsRuleConfig = new Config();
@@ -165,8 +170,8 @@ public partial class Zendo : MonoBehaviour
         if (tile == null) return;
 
         tile.Properties[(RuleProperty)i] += 1;
-        if (tile.Properties[(RuleProperty)i] == 4)
-            tile.Properties[(RuleProperty)i] = 1;
+        if (tile.Properties[(RuleProperty)i] == 3)
+            tile.Properties[(RuleProperty)i] = 0;
 
         UpdateDisplay();
     }
@@ -209,7 +214,10 @@ public partial class Zendo : MonoBehaviour
 
             // Allow guessing rule if guessed correctly
             if ((i == 0 && followsRule) || (i == 1 && !followsRule))
+            {
                 _canGuess = true;
+                _guessRule.InitializeButtons(RuleButtons);
+            }
         }
 
         UpdateDisplay();
@@ -217,7 +225,49 @@ public partial class Zendo : MonoBehaviour
 
     private void PressRuleButton(int i)
     {
-        _guessRule.Update(i, RuleButtons);
+        if (!_canGuess) return;
+
+        var ruleComplete = _guessRule.PressButton(i, RuleButtons);
+        if (ruleComplete)
+        {
+            if (_guessRule.Equals(_masterRule))
+            {
+                Module.HandlePass();
+            }
+            else
+            {
+                // Replace one of the answers with new prove
+                var config = new Config();
+                do config.Randomize();
+                while (_masterRule.Check(config) == _guessRule.Check(config));
+                Debug.LogFormat("Config that disproves the guess:\n{0}\n{1}",
+                    config,
+                    (_masterRule.Check(config)
+                    ? "because it matches the master rule, but not the guessed rule."
+                    : "because it matches the guessed rule, but not the master rule."));
+                if (_masterRule.Check(config))
+                {
+                    _followsRuleConfig = config;
+                    _currentAnswerConfigFollowsRule = true;
+
+                }
+                else
+                {
+                    _doesNotFollowRuleConfig = config;
+                    _currentAnswerConfigFollowsRule = false;
+                }
+
+                // Show the new prove
+                _mode = Mode.Answer;
+                _playerConfig = _currentConfig;
+                _currentConfig = _currentAnswerConfigFollowsRule ? _followsRuleConfig : _doesNotFollowRuleConfig;
+
+                // Reset guess buttons
+                _canGuess = false;
+                _guessRule = new Rule();
+                _guessRule.ClearButtons(RuleButtons);
+            }
+        }
 
         UpdateDisplay();
     }
@@ -261,31 +311,17 @@ public partial class Zendo : MonoBehaviour
             if (tile is Tile)
             {
                 frontSymbolText.text = _fontAwesome[_frontSymbols[tile.Properties[RuleProperty.FrontSymbol]]];
-                frontSymbolText.color = _colors[tile.Properties[RuleProperty.FrontColor] - 1];
+                frontSymbolText.color = _colors[tile.Properties[RuleProperty.FrontColor]];
 
                 if (_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]] is Vector3)
                     backSymbolObj.localPosition = (Vector3)_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
                 backSymbolText.text = _fontAwesome[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
-                backSymbolText.color = _colors[tile.Properties[RuleProperty.BackColor] + 2];
+                backSymbolText.color = _colors[tile.Properties[RuleProperty.BackColor] + 3];
             }
             else
             {
                 frontSymbolText.text = "";
                 backSymbolText.text = "";
-            }
-        }
-
-        if (_canGuess)
-        {
-            _guessRule.Update(-1, RuleButtons);
-        }
-        else
-        {
-            foreach (var button in RuleButtons)
-            {
-                button.transform.Find("Text").GetComponent<TextMesh>().text = "";
-                button.transform.Find("Front").GetComponent<TextMesh>().text = "";
-                button.transform.Find("Back").GetComponent<TextMesh>().text = "";
             }
         }
     }

@@ -16,10 +16,10 @@ public partial class Zendo
         {
             Properties = new Dictionary<RuleProperty?, int>()
             {
-                { RuleProperty.FrontColor, 1 },
-                { RuleProperty.FrontSymbol, 1 },
-                { RuleProperty.BackColor, 1 },
-                { RuleProperty.BackSymbol, 1 },
+                { RuleProperty.FrontColor, 0 },
+                { RuleProperty.FrontSymbol, 0 },
+                { RuleProperty.BackColor, 0 },
+                { RuleProperty.BackSymbol, 0 },
             };
         }
         public Dictionary<RuleProperty?, int> Properties { get; set; }
@@ -28,10 +28,15 @@ public partial class Zendo
     class Rule : IEquatable<Rule>
     {
         public RuleCount? Count { get; set; }
-        public RuleProperty FirstProperty { get; set; }
+        public RuleProperty? FirstProperty { get; set; }
         public RuleProperty? SecondProperty { get; set; }
+        public bool NeedsSecondProperty { get; set; }
         public int FirstVariant { get; set; }
         public int SecondVariant { get; set; }
+        public static List<Color> Colors { get; set; }
+        public static Dictionary<string, string> FontAwesome { get; set; }
+        public static Dictionary<int, string> FrontSymbols = new Dictionary<int, string>();
+        public static Dictionary<int, string> BackSymbols = new Dictionary<int, string>();
 
         public bool Check(Config c)
         {
@@ -50,9 +55,9 @@ public partial class Zendo
                     return c.Tiles.OfType<Tile>().Count(t => t.Properties[FirstProperty] == FirstVariant) > 1;
 
                 case RuleCount.AllThree:
-                    return c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 1)
-                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 2)
-                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 3);
+                    return c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 0)
+                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 1)
+                        && c.Tiles.OfType<Tile>().Any(t => t.Properties[FirstProperty] == 2);
             }
             return false;
         }
@@ -72,12 +77,12 @@ public partial class Zendo
         {
             Count = RandomEnumValue<RuleCount>();
             FirstProperty = RandomEnumValue<RuleProperty>();
-            FirstVariant = Rnd.Range(1, 4);
+            FirstVariant = Rnd.Range(0, 3);
             if (Count == RuleCount.AtLeastOne && Rnd.Range(0, 2) == 0)
             {
                 do SecondProperty = RandomEnumValue<RuleProperty>();
                 while (SecondProperty == FirstProperty);
-                SecondVariant = Rnd.Range(1, 4);
+                SecondVariant = Rnd.Range(0, 3);
             }
         }
 
@@ -86,38 +91,169 @@ public partial class Zendo
             switch (Count)
             {
                 case RuleCount.Zero:
-                    return String.Format("Zero with {0} {1}", FirstProperty, FirstVariant);
+                    return String.Format("Zero with {0} {1}", FirstProperty, FirstVariant + 1);
                 case RuleCount.AtLeastOne:
                     if (SecondProperty == null)
-                        return String.Format("At least one with {0} {1}", FirstProperty, FirstVariant);
+                        return String.Format("At least one with {0} {1}", FirstProperty, FirstVariant + 1);
                     else
-                        return String.Format("At least one with {0} {1} and {2} {3}", FirstProperty, FirstVariant, SecondProperty, SecondVariant);
+                        return String.Format("At least one with {0} {1} and {2} {3}", FirstProperty, FirstVariant + 1, SecondProperty, SecondVariant + 1);
                 case RuleCount.AtLeastTwo:
-                    return String.Format("At least two with {0} {1}", FirstProperty, FirstVariant);
+                    return String.Format("At least two with {0} {1}", FirstProperty, FirstVariant + 1);
                 case RuleCount.AllThree:
                     return String.Format("All three {0}s", FirstProperty);
             }
             return "";
         }
 
-        // Use button -1 to initialize
-        public void Update(int button, KMSelectable[] ruleButtons)
+        public void ClearButtons(KMSelectable[] ruleButtons)
         {
-            if (button == -1)
+            foreach (var button in ruleButtons)
             {
-                ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "ZERO";
-                ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "AT\nLEAST\nONE";
-                ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "AT\nLEAST\nTWO";
-                ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "ALL\nTHREE";
+                button.transform.Find("Text").GetComponent<TextMesh>().text = "";
+                button.transform.Find("Front").GetComponent<TextMesh>().text = "";
+                button.transform.Find("Back").GetComponent<TextMesh>().text = "";
             }
-            else if (!Count.HasValue)
+        }
+
+        public void InitializeButtons(KMSelectable[] ruleButtons)
+        {
+            ClearButtons(ruleButtons);
+            ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "ZERO\nWITH";
+            ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "AT\nLEAST\nONE\nWITH";
+            ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "AT\nLEAST\nTWO\nWITH";
+            ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "ALL\nTHREE";
+        }
+
+        public bool PressButton(int button, KMSelectable[] ruleButtons)
+        {
+            ClearButtons(ruleButtons);
+
+            if (!Count.HasValue)
             {
                 Count = (RuleCount)button;
-                ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR";
-                ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL";
-                ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR";
-                ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL";
+                var optionalS = Count == RuleCount.AllThree ? "S" : "";
+                ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR" + optionalS;
+                ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL" + optionalS;
+                ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR" + optionalS;
+                ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL" + optionalS;
             }
+
+            else if (!FirstProperty.HasValue)
+            {
+                FirstProperty = (RuleProperty)button;
+
+                if (Count == RuleCount.AllThree)
+                {
+                    return true;
+                }
+                if (FirstProperty == RuleProperty.FrontColor)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome["square-full"];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = Colors[i];
+                    }
+                }
+                else if (FirstProperty == RuleProperty.FrontSymbol)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome[FrontSymbols[i]];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
+                    }
+                }
+                else if (FirstProperty == RuleProperty.BackColor)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome["square-full"];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = Colors[i + 3];
+                    }
+                }
+                else if (FirstProperty == RuleProperty.BackSymbol)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome[BackSymbols[i]];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
+                    }
+                }
+            }
+
+            else if (FirstVariant == 0)
+            {
+                FirstVariant = button;
+
+                if (Count != RuleCount.AtLeastOne)
+                    return true;
+
+                ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "(DONE)";
+                ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "AND";
+            }
+
+            else if (!NeedsSecondProperty)
+            {
+                if (button == 0)
+                    return true;
+
+                NeedsSecondProperty = true;
+
+                var i = 0;
+                if (FirstProperty != RuleProperty.FrontColor)
+                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR";
+                if (FirstProperty != RuleProperty.FrontSymbol)
+                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL";
+                if (FirstProperty != RuleProperty.BackColor)
+                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR";
+                if (FirstProperty != RuleProperty.BackSymbol)
+                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL";
+            }
+
+            else if (!SecondProperty.HasValue)
+            {
+                SecondProperty = (RuleProperty)button;
+
+                if (SecondProperty == RuleProperty.FrontColor)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome["square-full"];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = Colors[i];
+                    }
+                }
+                else if (SecondProperty == RuleProperty.FrontSymbol)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome[FrontSymbols[i]];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
+                    }
+                }
+                else if (SecondProperty == RuleProperty.BackColor)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome["square-full"];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = Colors[i + 3];
+                    }
+                }
+                else if (SecondProperty == RuleProperty.BackSymbol)
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome[BackSymbols[i]];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
+                    }
+                }
+            }
+
+            else if (SecondVariant == 0)
+            {
+                SecondVariant = button;
+                return true;
+            }
+
+            return false;
         }
     }
 
@@ -154,10 +290,10 @@ public partial class Zendo
                 {
                     Properties = new Dictionary<RuleProperty?, int>()
                     {
-                        { RuleProperty.FrontColor, Rnd.Range(1, 4) },
-                        { RuleProperty.FrontSymbol, Rnd.Range(1, 4) },
-                        { RuleProperty.BackColor, Rnd.Range(1, 4) },
-                        { RuleProperty.BackSymbol, Rnd.Range(1, 4) },
+                        { RuleProperty.FrontColor, Rnd.Range(0, 3) },
+                        { RuleProperty.FrontSymbol, Rnd.Range(0, 3) },
+                        { RuleProperty.BackColor, Rnd.Range(0, 3) },
+                        { RuleProperty.BackSymbol, Rnd.Range(0, 3) },
                     }
                 };
             }
@@ -172,10 +308,10 @@ public partial class Zendo
             t => t is Tile
             ? String.Format(
                     "symbol color {0}, symbol {1}, pattern color {2}, pattern {3}",
-                    t.Properties[RuleProperty.FrontColor],
-                    t.Properties[RuleProperty.FrontSymbol],
-                    t.Properties[RuleProperty.BackColor],
-                    t.Properties[RuleProperty.BackSymbol])
+                    t.Properties[RuleProperty.FrontColor] + 1,
+                    t.Properties[RuleProperty.FrontSymbol] + 1,
+                    t.Properties[RuleProperty.BackColor] + 1,
+                    t.Properties[RuleProperty.BackSymbol] + 1)
             : "empty"
             ).ToArray());
         }
