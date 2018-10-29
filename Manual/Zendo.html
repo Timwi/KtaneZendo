@@ -9,6 +9,15 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/font.css">
 	<script src="js/highlighter.js"></script>
+	<style>
+		table.layout { border: none; }
+		table.layout td { background-color: #eee; text-align: center; border: none; padding: 0 .4rem; }
+		table.layout td.empty { background-color: white; }
+		.bt { border-top: 1px solid black !important;}
+		.br { border-right: 1px solid black !important; }
+		.bb { border-bottom: 1px solid black !important; }
+		.bl { border-left: 1px solid black !important; }
+	</style>
 </head>
 <body>
 	<div id="ManualContent">
@@ -21,17 +30,66 @@
 				<div class="page-content">
 					<img src="img/Component/Zendo.svg" class="diagram">
 					<h2>On the Subject of Zendo</h2>
-					<p class="flavour-text">Your flavor text should go here.</p>
-					<ol>
-						<li>You can make "structures" by choosing a shape, color and orientation for 4 pieces in a 2 by 2. (yea, flat, I know, but I want to actually implement it)
-					* The mod will tell if it follows the rule or not.
-					* The defuser can make a guess, by drilling down all possible rules, using a couple of buttons. The buttons change caption along the way. Maybe the first stage they will read "color" / "shape" / "relative position" / "absolute position". Then if you click "color" the captions will change to "all same", "exactly 1", "more than 2". Then if you pick "exactly 1" the captions become "yellow", "red", "blue". Etc.
-					* You can only make a guess if you have guessing tokens. Tokens can be earned by solving other modules. (give away some if there are too few other mods, maybe also after some time)
-					* You cannot strike. It will just cost tokens/time to guess.
-					* If you guess wrong, the mod will offer you a structure that disproves your guess.
-					</ol>
+					<p class="flavour-text">There is only one rule. And it’s your job to discover it.</p>
+					<p>
+						The module displays a configuration of four tiles that can be altered. Each tile has four properties; front color, front symbol, back color and back symbol. There’s a hidden rule that describes a configuration. Any configuration either follows the rule, or it doesn’t. It’s your job to discover the rule.
+					</p>
+					<div style="float: left; margin-right: 4rem">
+						Module layout
+						<table class="layout">
+							<tr>
+								<td class="bt br bl">P</td>
+								<td class="bt bl">T</td>
+								<td class="bt br">T</td>
+								<td class="empty"></td>
+							</tr>
+							<tr>
+								<td class="br bl">P</td>
+								<td class="bb bl">T</td>
+								<td class="br bb">T</td>
+								<td class="bt br bb bl">M</td>
+							</tr>
+							<tr>
+								<td class="br bl">P</td>
+								<td class="bt bl">R</td>
+								<td class="bt br">R</td>
+								<td class="bt br bl">F</td>
+							</tr>
+							<tr>
+								<td class="br bb bl">P</td>
+								<td class="bb bl">R</td>
+								<td class="br bb">R</td>
+								<td class="br bb bl">F</td>
+							</tr>
+						</table>
+					</div>
+					<p>
+						P = Property buttons<br>
+						T = Tiles<br>
+						M = Mode button<br>
+						R = Rule buttons<br>
+						F = Follow buttons
+					</p>
+					<div style="clear: both"></div>
+					<p>
+						There are two modes the module can be in. In
+						<b>[?] question mode</b>, you can change the configuration and guess if it follows the rule or not. In
+						<b>[!] answer mode</b>, the module will show you both a configuration that follows the rule, and one that doesn’t.
+					</p>
+					<p>
+						There are two follow buttons, one white and one black. In answer mode, press the white one to see a configuration that follows the rule, and press the black one to see a configuration that doesn’t follow the rule. A check mark on the follow button will tell you what’s currently displayed.
+					</p>
+					<p>
+						In question mode, to change the configuration, first press a tile, then press any of the property buttons. Each property button cycles through three possible values. To remove a tile, long press the tile. To add a tile on an empty space, press the empty space. If you switch from question mode to answer mode, your configuration is saved. Switching back to question mode will restore that configuration. In answer mode, long press a follow button to replace the question mode configuration with that answer configuration.
+					</p>
+					<p>
+						In answer mode, press a follow button to guess if the current configuration follows the rule (white) or not (black). The correct button will flash a check mark. If your guess was correct, the rule buttons will be enabled. (For this purpose, a particular configuration can only be used once.)
+					</p>
+					<p>
+						To guess what the rule is, build the rule by selecting a sequence of rule parts. E.g. to build the rule "contains at least one blue star", you would press consecutively: AT LEAST ONE WITH, FRONT COLOR, BLUE, AND, FRONT SYMBOL, STAR. If the guess was incorrect, one of the answer configurations will be replaced by a configuration that disproves the guessed rule. Either the configuration follows the hidden rule, but not your guessed rule, or it follows the guessed rule, but not the hidden rule. If the guess was correct, the module is solved.
+					</p>
 				</div>
-				<div class="page-footer relative-footer">Page 1 of 2</div>
+				<div class="page-footer relative-footer">Page 1 of 1</div>
 			</div>
 		</div>
 	</div>

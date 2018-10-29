@@ -198,20 +198,21 @@ public partial class Zendo
 
                 NeedsSecondProperty = true;
 
-                var i = 0;
                 if (FirstProperty != RuleProperty.FrontColor)
-                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR";
+                    ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR";
                 if (FirstProperty != RuleProperty.FrontSymbol)
-                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL";
+                    ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL";
                 if (FirstProperty != RuleProperty.BackColor)
-                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR";
+                    ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR";
                 if (FirstProperty != RuleProperty.BackSymbol)
-                    ruleButtons[++i].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL";
+                    ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL";
             }
 
             else if (!SecondProperty.HasValue)
             {
                 SecondProperty = (RuleProperty)button;
+
+                //if (FirstProperty == SecondProperty) return false;
 
                 if (SecondProperty == RuleProperty.FrontColor)
                 {
