@@ -292,11 +292,11 @@ public partial class Zendo : MonoBehaviour
     private void UpdateDisplay()
     {
         ModeButton.transform.Find("Text").GetComponent<TextMesh>().text = _mode == Mode.Question ? "?" : "!";
-        FollowButtons[0].transform.Find("Text").GetComponent<TextMesh>().text =
+        FollowButtons[0].transform.Find("Front").GetComponent<TextMesh>().text =
             _currentAnswerConfigFollowsRule && _mode == Mode.Answer
             ? _fontAwesome["check-circle"]
             : _fontAwesome["circle"];
-        FollowButtons[1].transform.Find("Text").GetComponent<TextMesh>().text =
+        FollowButtons[1].transform.Find("Front").GetComponent<TextMesh>().text =
             !_currentAnswerConfigFollowsRule && _mode == Mode.Answer
             ? _fontAwesome["check-circle"]
             : _fontAwesome["circle"];

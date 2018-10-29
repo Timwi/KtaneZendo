@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ButtonText
+  m_Name: TextMat
   m_Shader: {fileID: 4800000, guid: 306ffc165961a2c40806bad3bb861c43, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -39,7 +39,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 92f38cf1e994ed04f8eb8da6a750dce3, type: 3}
+        m_Texture: {fileID: 2800000, guid: ae65718dd22fe614b86943f2c3e9c38a, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
