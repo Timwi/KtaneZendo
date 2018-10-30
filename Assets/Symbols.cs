@@ -3,6 +3,7 @@ using UnityEngine;
 
 public partial class Zendo
 {
+    public const float BackPosY = .1f;
     private List<string> _possibleFrontSymbols = new List<string>(new string[] {
         "anchor",
         "ankh",
@@ -69,17 +70,17 @@ public partial class Zendo
 
     private Dictionary<string, Vector3?> _possibleBackSymbols = new Dictionary<string, Vector3?>()
     {
-        { "bookmark", new Vector3(0f, 0f, -.2f) },
+        { "bookmark", new Vector3(0f, BackPosY, -.2f) },
         { "circle", null },
         { "certificate", null },
-        { "comment", new Vector3(0f, 0f, -.2f) },
-        { "flag", new Vector3(0f, 0f, -.5f) },
-        { "folder", new Vector3(0f, 0f, .4f) },
+        { "comment", new Vector3(0f, BackPosY, -.2f) },
+        { "flag", new Vector3(0f, BackPosY, -.5f) },
+        { "folder", new Vector3(0f, BackPosY, .4f) },
         { "heart", null },
         { "lemon", null },
-        { "map-marker", new Vector3(0f, 0f, -.6f) },
+        { "map-marker", new Vector3(0f, BackPosY, -.6f) },
         { "square", null },
-        { "splotch", new Vector3(.2f, 0f, 0f) }
+        { "splotch", new Vector3(.2f, BackPosY, 0f) }
     };
 
     private Dictionary<string, string> _fontAwesome = new Dictionary<string, string>()

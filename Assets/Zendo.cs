@@ -316,7 +316,7 @@ public partial class Zendo : MonoBehaviour
                 if (_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]] is Vector3)
                     backSymbolObj.localPosition = (Vector3)_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
                 else
-                    backSymbolObj.localPosition = new Vector3(0f, 0f, 0f);
+                    backSymbolObj.localPosition = new Vector3(0f, BackPosY, 0f);
                 backSymbolText.text = _fontAwesome[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
                 backSymbolText.color = _colors[tile.Properties[RuleProperty.BackColor] + 3];
             }
