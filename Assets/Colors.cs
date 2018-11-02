@@ -65,13 +65,13 @@ class Colors
 
     public static string HueToColorName(int hue)
     {
-        if (hue > 0 && hue <= 30) return "red";
-        if (hue > 30 && hue <= 70) return "yellow";
-        if (hue > 70 && hue <= 150) return "green";
-        if (hue > 150 && hue <= 200) return "cyan";
-        if (hue > 200 && hue <= 270) return "blue";
-        if (hue > 270 && hue <= 330) return "magenta";
-        if (hue > 330 && hue <= 360) return "red";
+        if (hue >= 0 && hue < 30) return "red";
+        if (hue >= 30 && hue < 70) return "yellow";
+        if (hue >= 70 && hue < 150) return "green";
+        if (hue >= 150 && hue < 200) return "cyan";
+        if (hue >= 200 && hue < 270) return "blue";
+        if (hue >= 270 && hue < 330) return "magenta";
+        if (hue >= 330 && hue < 360) return "red";
         return "";
     }
 }
