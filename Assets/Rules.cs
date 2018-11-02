@@ -7,8 +7,56 @@ using UnityEngine;
 
 public partial class Zendo
 {
-    enum RuleCount { Zero, AtLeastOne, AtLeastTwo, AllThree }
-    enum RuleProperty { FrontColor, FrontSymbol, BackColor, BackSymbol }
+    private enum RuleCount { Zero, AtLeastOne, AtLeastTwo, AllThree }
+    private enum RuleProperty { FrontColor, FrontSymbol, BackColor, BackSymbol }
+    private static Dictionary<RuleProperty?, string> PropertyNames = new Dictionary<RuleProperty?, string>()
+    {
+        { RuleProperty.FrontColor, "front color" },
+        { RuleProperty.FrontSymbol, "front symbol" },
+        { RuleProperty.BackColor, "back color" },
+        { RuleProperty.BackSymbol, "back symbol" },
+    };
+
+    class Values
+    {
+        private const float FrontLightness = .25f;
+        private const float BackLightness = .75f;
+
+        public Dictionary<int, string> FrontSymbols = new Dictionary<int, string>();
+        public Dictionary<int, string> BackSymbols = new Dictionary<int, string>();
+        public List<Color> FrontColors = new List<Color>();
+        public List<Color> BackColors = new List<Color>();
+        public List<string> FrontColorNames = new List<string>();
+        public List<string> BackColorNames = new List<string>();
+
+        public Values(List<string> possibleFrontSymbols, Dictionary<string, Vector3?> possibleBackSymbols)
+        {
+            var frontSymbols = possibleFrontSymbols.Shuffle();
+            var backSymbols = possibleBackSymbols.Keys.ToList().Shuffle();
+            for (var i = 0; i < 3; i++) FrontSymbols.Add(i, frontSymbols[i]);
+            for (var i = 0; i < 3; i++) BackSymbols.Add(i, backSymbols[i]);
+
+            for (var i = 0; i < 2; i++)
+            {
+                int[] hues;
+                do hues = new int[] { Rnd.Range(0, 360), Rnd.Range(0, 360), Rnd.Range(0, 360) };
+                while (!Colors.EnoughDistance(hues));
+                foreach (var hue in hues)
+                {
+                    if (i == 0)
+                    {
+                        FrontColorNames.Add(Colors.HueToColorName(hue));
+                        FrontColors.Add(Colors.HslToColor(hue, 1f, FrontLightness));
+                    }
+                    else
+                    {
+                        BackColorNames.Add(Colors.HueToColorName(hue));
+                        BackColors.Add(Colors.HslToColor(hue, 1f, BackLightness));
+                    }
+                }
+            }
+        }
+    }
 
     class Tile
     {
@@ -27,16 +75,19 @@ public partial class Zendo
 
     class Rule : IEquatable<Rule>
     {
+        private Values Values;
         public RuleCount? Count { get; set; }
         public RuleProperty? FirstProperty { get; set; }
         public RuleProperty? SecondProperty { get; set; }
         public bool NeedsSecondProperty { get; set; }
-        public int FirstVariant { get; set; }
-        public int SecondVariant { get; set; }
-        public static List<Color> Colors { get; set; }
-        public static Dictionary<string, string> FontAwesome { get; set; }
-        public static Dictionary<int, string> FrontSymbols = new Dictionary<int, string>();
-        public static Dictionary<int, string> BackSymbols = new Dictionary<int, string>();
+        public int? FirstVariant { get; set; }
+        public int? SecondVariant { get; set; }
+        public static Dictionary<string, string> FontAwesome;
+
+        public Rule(Values values)
+        {
+            Values = values;
+        }
 
         public bool Check(Config c)
         {
@@ -77,7 +128,10 @@ public partial class Zendo
         {
             Count = RandomEnumValue<RuleCount>();
             FirstProperty = RandomEnumValue<RuleProperty>();
-            FirstVariant = Rnd.Range(0, 3);
+            if (Count != RuleCount.AllThree)
+            {
+                FirstVariant = Rnd.Range(0, 3);
+            }
             if (Count == RuleCount.AtLeastOne && Rnd.Range(0, 2) == 0)
             {
                 do SecondProperty = RandomEnumValue<RuleProperty>();
@@ -91,16 +145,16 @@ public partial class Zendo
             switch (Count)
             {
                 case RuleCount.Zero:
-                    return String.Format("Zero with {0} {1}", FirstProperty, FirstVariant + 1);
+                    return String.Format("Zero with {0}", PropertyToString(FirstProperty, FirstVariant, Values));
                 case RuleCount.AtLeastOne:
                     if (SecondProperty == null)
-                        return String.Format("At least one with {0} {1}", FirstProperty, FirstVariant + 1);
+                        return String.Format("At least one with {0}", PropertyToString(FirstProperty, FirstVariant, Values));
                     else
-                        return String.Format("At least one with {0} {1} and {2} {3}", FirstProperty, FirstVariant + 1, SecondProperty, SecondVariant + 1);
+                        return String.Format("At least one with {0} and {1}", PropertyToString(FirstProperty, FirstVariant, Values), PropertyToString(SecondProperty, SecondVariant, Values));
                 case RuleCount.AtLeastTwo:
-                    return String.Format("At least two with {0} {1}", FirstProperty, FirstVariant + 1);
+                    return String.Format("At least two with {0}", PropertyToString(FirstProperty, FirstVariant, Values));
                 case RuleCount.AllThree:
-                    return String.Format("All three {0}s", FirstProperty);
+                    return String.Format("All three {0}s", PropertyNames[FirstProperty]);
             }
             return "";
         }
@@ -126,10 +180,9 @@ public partial class Zendo
 
         public bool PressButton(int button, KMSelectable[] ruleButtons)
         {
-            ClearButtons(ruleButtons);
-
             if (!Count.HasValue)
             {
+                ClearButtons(ruleButtons);
                 Count = (RuleCount)button;
                 var optionalS = Count == RuleCount.AllThree ? "S" : "";
                 ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR" + optionalS;
@@ -140,25 +193,24 @@ public partial class Zendo
 
             else if (!FirstProperty.HasValue)
             {
+                ClearButtons(ruleButtons);
                 FirstProperty = (RuleProperty)button;
 
-                if (Count == RuleCount.AllThree)
-                {
-                    return true;
-                }
+                if (Count == RuleCount.AllThree) return true;
+
                 if (FirstProperty == RuleProperty.FrontColor)
                 {
                     for (var i = 0; i < 3; i++)
                     {
                         ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome["square-full"];
-                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = Colors[i];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = Values.FrontColors[i];
                     }
                 }
                 else if (FirstProperty == RuleProperty.FrontSymbol)
                 {
                     for (var i = 0; i < 3; i++)
                     {
-                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome[FrontSymbols[i]];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome[Values.FrontSymbols[i]];
                         ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
                     }
                 }
@@ -167,25 +219,25 @@ public partial class Zendo
                     for (var i = 0; i < 3; i++)
                     {
                         ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome["square-full"];
-                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = Colors[i + 3];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = Values.BackColors[i];
                     }
                 }
                 else if (FirstProperty == RuleProperty.BackSymbol)
                 {
                     for (var i = 0; i < 3; i++)
                     {
-                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome[BackSymbols[i]];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome[Values.BackSymbols[i]];
                         ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
                     }
                 }
             }
 
-            else if (FirstVariant == 0)
+            else if (!FirstVariant.HasValue)
             {
+                ClearButtons(ruleButtons);
                 FirstVariant = button;
 
-                if (Count != RuleCount.AtLeastOne)
-                    return true;
+                if (Count != RuleCount.AtLeastOne) return true;
 
                 ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "(DONE)";
                 ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "AND";
@@ -193,40 +245,42 @@ public partial class Zendo
 
             else if (!NeedsSecondProperty)
             {
-                if (button == 0)
-                    return true;
+                if (button == 0) return true;
+                if (button == 1)
+                {
+                    ClearButtons(ruleButtons);
+                    NeedsSecondProperty = true;
 
-                NeedsSecondProperty = true;
-
-                if (FirstProperty != RuleProperty.FrontColor)
-                    ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR";
-                if (FirstProperty != RuleProperty.FrontSymbol)
-                    ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL";
-                if (FirstProperty != RuleProperty.BackColor)
-                    ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR";
-                if (FirstProperty != RuleProperty.BackSymbol)
-                    ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL";
+                    if (FirstProperty != RuleProperty.FrontColor)
+                        ruleButtons[0].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nCOLOR";
+                    if (FirstProperty != RuleProperty.FrontSymbol)
+                        ruleButtons[1].transform.Find("Text").GetComponent<TextMesh>().text = "FRONT\nSYMBOL";
+                    if (FirstProperty != RuleProperty.BackColor)
+                        ruleButtons[2].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nCOLOR";
+                    if (FirstProperty != RuleProperty.BackSymbol)
+                        ruleButtons[3].transform.Find("Text").GetComponent<TextMesh>().text = "BACK\nSYMBOL";
+                }
             }
 
             else if (!SecondProperty.HasValue)
             {
+                if (FirstProperty == (RuleProperty)button) return false;
+
+                ClearButtons(ruleButtons);
                 SecondProperty = (RuleProperty)button;
-
-                //if (FirstProperty == SecondProperty) return false;
-
                 if (SecondProperty == RuleProperty.FrontColor)
                 {
                     for (var i = 0; i < 3; i++)
                     {
                         ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome["square-full"];
-                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = Colors[i];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = Values.FrontColors[i];
                     }
                 }
                 else if (SecondProperty == RuleProperty.FrontSymbol)
                 {
                     for (var i = 0; i < 3; i++)
                     {
-                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome[FrontSymbols[i]];
+                        ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().text = FontAwesome[Values.FrontSymbols[i]];
                         ruleButtons[i].transform.Find("Front").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
                     }
                 }
@@ -235,21 +289,22 @@ public partial class Zendo
                     for (var i = 0; i < 3; i++)
                     {
                         ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome["square-full"];
-                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = Colors[i + 3];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = Values.BackColors[i];
                     }
                 }
                 else if (SecondProperty == RuleProperty.BackSymbol)
                 {
                     for (var i = 0; i < 3; i++)
                     {
-                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome[BackSymbols[i]];
+                        ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().text = FontAwesome[Values.BackSymbols[i]];
                         ruleButtons[i].transform.Find("Back").GetComponent<TextMesh>().color = new Color(1f, 1f, 1f);
                     }
                 }
             }
 
-            else if (SecondVariant == 0)
+            else if (!SecondVariant.HasValue)
             {
+                ClearButtons(ruleButtons);
                 SecondVariant = button;
                 return true;
             }
@@ -260,7 +315,14 @@ public partial class Zendo
 
     class Config : IEquatable<Config>
     {
+        private Values Values;
+
         public List<Tile> Tiles { get; set; }
+
+        public Config(Values values)
+        {
+            Values = values;
+        }
 
         public bool Equals(Config config)
         {
@@ -305,14 +367,14 @@ public partial class Zendo
 
         override public string ToString()
         {
-            return String.Join("\n", Tiles.Select(
+            return String.Join(", ", Tiles.Select(
             t => t is Tile
             ? String.Format(
-                    "symbol color {0}, symbol {1}, pattern color {2}, pattern {3}",
-                    t.Properties[RuleProperty.FrontColor] + 1,
-                    t.Properties[RuleProperty.FrontSymbol] + 1,
-                    t.Properties[RuleProperty.BackColor] + 1,
-                    t.Properties[RuleProperty.BackSymbol] + 1)
+                    "{0} {1} on {2} {3}",
+                    Values.FrontColorNames[t.Properties[RuleProperty.FrontColor]],
+                    Values.FrontSymbols[t.Properties[RuleProperty.FrontSymbol]],
+                    Values.BackColorNames[t.Properties[RuleProperty.BackColor]],
+                    Values.BackSymbols[t.Properties[RuleProperty.BackSymbol]])
             : "empty"
             ).ToArray());
         }
@@ -322,5 +384,26 @@ public partial class Zendo
     {
         var values = Enum.GetValues(typeof(T));
         return (T)values.GetValue(Rnd.Range(0, values.Length));
+    }
+
+    private static string PropertyToString(RuleProperty? property, int? variant, Values values)
+    {
+        var str = PropertyNames[property] + " ";
+        switch (property)
+        {
+            case RuleProperty.FrontColor:
+                str += values.FrontColorNames[(int)variant];
+                break;
+            case RuleProperty.FrontSymbol:
+                str += values.FrontSymbols[(int)variant];
+                break;
+            case RuleProperty.BackColor:
+                str += values.BackColorNames[(int)variant];
+                break;
+            case RuleProperty.BackSymbol:
+                str += values.BackSymbols[(int)variant];
+                break;
+        }
+        return str;
     }
 }

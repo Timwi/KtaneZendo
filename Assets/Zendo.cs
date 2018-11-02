@@ -21,10 +21,9 @@ public partial class Zendo : MonoBehaviour
     private static int _moduleIdCounter = 1;
     private bool _isButtonDown, _isLongPress;
     private Coroutine _buttonDownCoroutine;
-    private string[] _propertyNames = { "front color", "front symbol", "back color", "back symbol" };
-    private Rule _masterRule;
-    private Rule _guessRule = new Rule();
-    private Config _playerConfig = new Config() { Tiles = new List<Tile>() { null, null, null, null } };
+    private Rule _hiddenRule;
+    private Rule _guessRule;
+    private Config _playerConfig;
     private Config _currentConfig;
     private Config _followsRuleConfig;
     private Config _doesNotFollowRuleConfig;
@@ -32,11 +31,9 @@ public partial class Zendo : MonoBehaviour
     private List<Config> _quizzedConfigs = new List<Config>();
     private int _activeTile = -1;
     private bool _canGuess;
-    private Dictionary<int, string> _frontSymbols = new Dictionary<int, string>();
-    private Dictionary<int, string> _backSymbols = new Dictionary<int, string>();
-    private List<Color> _colors = new List<Color>();
     private enum Mode { Question, Answer }
     private Mode _mode = Mode.Answer;
+    private Values _values;
 
     void Start()
     {
@@ -73,69 +70,38 @@ public partial class Zendo : MonoBehaviour
         ModeButton.OnInteract += delegate () { _buttonDownCoroutine = StartCoroutine(HandleLongPress()); return false; };
         ModeButton.OnInteractEnded += delegate () { HandleButtonUp(); PressModeButton(); };
 
-        // Pick random symbols
-        var frontSymbols = _possibleFrontSymbols.Shuffle();
-        var backSymbols = _possibleBackSymbols.Keys.ToList().Shuffle();
-        for (var i = 0; i < 3; i++) _frontSymbols.Add(i, frontSymbols[i]);
-        for (var i = 0; i < 3; i++) _backSymbols.Add(i, backSymbols[i]);
-        Debug.LogFormat("Front symbols: {0}, {1}, {2}", _frontSymbols[0], _frontSymbols[1], _frontSymbols[2]);
-        Debug.LogFormat("Back symbols: {0}, {1}, {2}", _backSymbols[0], _backSymbols[1], _backSymbols[2]);
-
-        // Pick random colors
-        var lightnesses = new float[] { .25f, .75f };
-        foreach (var lightness in lightnesses)
-        {
-            int[] hues;
-            do hues = new int[] { Rnd.Range(0, 360), Rnd.Range(0, 360), Rnd.Range(0, 360) };
-            while (!Colors.EnoughDistance(hues));
-            Debug.LogFormat("Hues: {0}, {1}, {2}", hues[0], hues[1], hues[2]);
-            foreach (var hue in hues) _colors.Add(Colors.HslToColor(hue, 1f, lightness));
-        }
-
-        // Pick random rule
-        _masterRule = new Rule();
-        _masterRule.Randomize();
-        Debug.LogFormat("Random rule: {0}", _masterRule);
+        // Pick random symbols and colors
+        _values = new Values(_possibleFrontSymbols, _possibleBackSymbols);
+        Debug.LogFormat("[Zendo #{0}] Front colors: {1}, {2}, {3}.", _moduleId, _values.FrontColorNames[0], _values.FrontColorNames[1], _values.FrontColorNames[2]);
+        Debug.LogFormat("[Zendo #{0}] Front symbols: {1}, {2}, {3}.", _moduleId, _values.FrontSymbols[0], _values.FrontSymbols[1], _values.FrontSymbols[2]);
+        Debug.LogFormat("[Zendo #{0}] Back colors: {1}, {2}, {3}.", _moduleId, _values.BackColorNames[0], _values.BackColorNames[1], _values.BackColorNames[2]);
+        Debug.LogFormat("[Zendo #{0}] Back symbols: {1}, {2}, {3}.", _moduleId, _values.BackSymbols[0], _values.BackSymbols[1], _values.BackSymbols[2]);
 
         // Setup rule stuff
+        _guessRule = new Rule(_values);
         _guessRule.ClearButtons(RuleButtons);
-        Rule.Colors = _colors;
         Rule.FontAwesome = _fontAwesome;
-        Rule.FrontSymbols = _frontSymbols;
-        Rule.BackSymbols = _backSymbols;
+
+        // Pick random rule
+        _hiddenRule = new Rule(_values);
+        _hiddenRule.Randomize();
+        Debug.LogFormat("[Zendo #{0}] Hidden rule: {1}.", _moduleId, _hiddenRule);
 
         // Search for random configuration that matches the rule
-        _followsRuleConfig = new Config();
+        _playerConfig = new Config(_values) { Tiles = new List<Tile>() { null, null, null, null } };
+        _followsRuleConfig = new Config(_values);
         do _followsRuleConfig.Randomize();
-        while (!_masterRule.Check(_followsRuleConfig));
+        while (!_hiddenRule.Check(_followsRuleConfig));
         _quizzedConfigs.Add(_followsRuleConfig.Clone());
         _currentConfig = _followsRuleConfig;
-        Debug.LogFormat("Config that matches the master rule:\n{0}", _followsRuleConfig.ToString());
+        Debug.LogFormat("[Zendo #{0}] Config that matches the hidden rule: {1}.", _moduleId, _followsRuleConfig);
 
         // Search for random configuration that doesn't match the rule
-        _doesNotFollowRuleConfig = new Config();
+        _doesNotFollowRuleConfig = new Config(_values);
         do _doesNotFollowRuleConfig.Randomize();
-        while (_masterRule.Check(_doesNotFollowRuleConfig));
+        while (_hiddenRule.Check(_doesNotFollowRuleConfig));
         _quizzedConfigs.Add(_doesNotFollowRuleConfig.Clone());
-        Debug.LogFormat("Config that doesn't match the master rule:\n{0}", _doesNotFollowRuleConfig.ToString());
-
-        //// Some random guesses and a response to disprove
-        //for (var i = 0; i < 10; i++)
-        //{
-        //    var guessedRule = new Rule();
-        //    do guessedRule.Randomize();
-        //    while (guessedRule == _masterRule);
-        //    Debug.LogFormat("Random guess: {0}", guessedRule);
-
-        //    var config = new Config();
-        //    do config.Randomize();
-        //    while (_masterRule.Check(config) == guessedRule.Check(config));
-        //    Debug.LogFormat("Config that disproves the guess:\n{0}\n{1}",
-        //        config.ToString(),
-        //        (_masterRule.Check(config)
-        //            ? "because it matches the master rule, but not the guessed rule."
-        //            : "because it matches the guessed rule, but not the master rule."));
-        //}
+        Debug.LogFormat("[Zendo #{0}] Config that doesn't match the hidden rule: {1}.", _moduleId, _doesNotFollowRuleConfig);
 
         UpdateDisplay();
     }
@@ -204,8 +170,14 @@ public partial class Zendo : MonoBehaviour
         else
         {
             // Flash the button that was the actual answer
-            var followsRule = _masterRule.Check(_currentConfig);
+            var followsRule = _hiddenRule.Check(_currentConfig);
             StartCoroutine(FlashFollowButton(followsRule));
+
+            Debug.LogFormat("[Zendo #{0}] Guessing config: {1}.", _moduleId, _currentConfig);
+            Debug.LogFormat("[Zendo #{0}] You guessed {1}, {2} {3}.", _moduleId,
+                i == 0 ? "it follows the rule" : "it doesn't follow the rule",
+                (i == 0 && followsRule) || (i == 1 && !followsRule) ? "and indeed" : "but",
+                followsRule ? "it does" : "it doesn't");
 
             // First check if this config has been quizzed before
             foreach (var config in _quizzedConfigs)
@@ -230,26 +202,28 @@ public partial class Zendo : MonoBehaviour
         var ruleComplete = _guessRule.PressButton(i, RuleButtons);
         if (ruleComplete)
         {
-            if (_guessRule.Equals(_masterRule))
+            Debug.LogFormat("[Zendo #{0}] Guessing rule: {1}.", _moduleId, _guessRule);
+            if (_guessRule.Equals(_hiddenRule))
             {
+                Debug.LogFormat("[Zendo #{0}] Correct! Module solved.", _moduleId);
                 Module.HandlePass();
             }
             else
             {
                 // Replace one of the answers with new prove
-                var config = new Config();
+                var config = new Config(_values);
                 do config.Randomize();
-                while (_masterRule.Check(config) == _guessRule.Check(config));
-                Debug.LogFormat("Config that disproves the guess:\n{0}\n{1}",
-                    config,
-                    (_masterRule.Check(config)
-                    ? "because it matches the master rule, but not the guessed rule."
-                    : "because it matches the guessed rule, but not the master rule."));
-                if (_masterRule.Check(config))
+                while (_hiddenRule.Check(config) == _guessRule.Check(config));
+                _quizzedConfigs.Add(config.Clone());
+                Debug.LogFormat("[Zendo #{0}] That's incorrect. Config that disproves the guess: {1}.", _moduleId, config);
+                Debug.LogFormat("[Zendo #{0}] {1}", _moduleId,
+                    _hiddenRule.Check(config)
+                    ? "This config matches the hidden rule, but not the guessed rule."
+                    : "This config matches the guessed rule, but not the hidden rule.");
+                if (_hiddenRule.Check(config))
                 {
                     _followsRuleConfig = config;
                     _currentAnswerConfigFollowsRule = true;
-
                 }
                 else
                 {
@@ -264,7 +238,7 @@ public partial class Zendo : MonoBehaviour
 
                 // Reset guess buttons
                 _canGuess = false;
-                _guessRule = new Rule();
+                _guessRule = new Rule(_values);
                 _guessRule.ClearButtons(RuleButtons);
             }
         }
@@ -310,15 +284,15 @@ public partial class Zendo : MonoBehaviour
 
             if (tile is Tile)
             {
-                frontSymbolText.text = _fontAwesome[_frontSymbols[tile.Properties[RuleProperty.FrontSymbol]]];
-                frontSymbolText.color = _colors[tile.Properties[RuleProperty.FrontColor]];
+                frontSymbolText.text = _fontAwesome[_values.FrontSymbols[tile.Properties[RuleProperty.FrontSymbol]]];
+                frontSymbolText.color = _values.FrontColors[tile.Properties[RuleProperty.FrontColor]];
 
-                if (_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]] is Vector3)
-                    backSymbolObj.localPosition = (Vector3)_possibleBackSymbols[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
+                if (_possibleBackSymbols[_values.BackSymbols[tile.Properties[RuleProperty.BackSymbol]]] is Vector3)
+                    backSymbolObj.localPosition = (Vector3)_possibleBackSymbols[_values.BackSymbols[tile.Properties[RuleProperty.BackSymbol]]];
                 else
                     backSymbolObj.localPosition = new Vector3(0f, BackPosY, 0f);
-                backSymbolText.text = _fontAwesome[_backSymbols[tile.Properties[RuleProperty.BackSymbol]]];
-                backSymbolText.color = _colors[tile.Properties[RuleProperty.BackColor] + 3];
+                backSymbolText.text = _fontAwesome[_values.BackSymbols[tile.Properties[RuleProperty.BackSymbol]]];
+                backSymbolText.color = _values.BackColors[tile.Properties[RuleProperty.BackColor]];
             }
             else
             {
@@ -331,7 +305,7 @@ public partial class Zendo : MonoBehaviour
     private IEnumerator FlashFollowButton(bool followsRule)
     {
         yield return null;
-        var text = FollowButtons[followsRule ? 0 : 1].transform.Find("Text").GetComponent<TextMesh>();
+        var text = FollowButtons[followsRule ? 0 : 1].transform.Find("Front").GetComponent<TextMesh>();
         for (var i = 0; i < 6; i++)
         {
             text.text = (i % 2 == 0) ? _fontAwesome["check-circle"] : _fontAwesome["circle"];
